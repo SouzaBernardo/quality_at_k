@@ -77,7 +77,19 @@ O script envia cada projeto para o SonarQube via `pysonar`, usando os tokens de 
 
 ## Origem do diretório `data/`
 
-Os arquivos em `data/` **não são gerados neste repositório** — eles são o resultado de dois scripts executados dentro do repositório do benchmark [ClassEval](https://github.com/FudanSELab/ClassEval), sobre os arquivos brutos de saída dos modelos.
+O diretório `data/` é o resultado final de um pipeline de dois passos executado a partir dos arquivos brutos do benchmark [ClassEval](https://github.com/FudanSELab/ClassEval). O fluxo completo é:
+
+```
+ClassEval (output/model_output_v1.0.0/)
+        │
+        │  scripts/take_solution.py
+        ▼
+classEval_output/          ← artefato intermediário (neste repositório)
+        │
+        │  scripts/group_filtered_solutions.py
+        ▼
+data/                      ← entrada do SonarQube
+```
 
 ### Passo 1 — `scripts/take_solution.py`
 
@@ -86,22 +98,32 @@ Lê os JSONs brutos em `output/model_output_v1.0.0/` do ClassEval, extrai o camp
 - Remove artefatos de Markdown e linguagem natural (blocos ` ```python `, explicações, notas) das respostas dos modelos
 - Cruza cada geração com `output/result/detailed_result.json` para obter o desfecho nos testes unitários (`Success`, `PartialSuccess`, `Fail`, `Error`)
 - Nomeia cada arquivo com o padrão `<Classe><índice><Status>.py` — por exemplo, `AccessGatewayFilter0Error.py`
-- Salva as versões original e sanitizada (`filtered/`) separadamente
+- Salva as versões original e sanitizada separadamente
+
+O resultado é salvo em `classEval_output/`, com a seguinte estrutura:
+
+```
+classEval_output/
+└── GPT-4-Turbo_class_H_greedy/
+    └── AccessGatewayFilter/
+        ├── filtered/
+        │   └── AccessGatewayFilter0Error.py   ← código sanitizado
+        └── original/
+            └── AccessGatewayFilter0Error.py   ← resposta bruta do modelo
+```
 
 ### Passo 2 — `scripts/group_filtered_solutions.py`
 
-Agrupa os arquivos `filtered/` gerados pelo passo anterior em uma estrutura plana por modelo/estratégia, que é exatamente o formato esperado pelo SonarQube e pelo `run_sonar.sh`:
+Lê os arquivos `filtered/` de `classEval_output/` e os reorganiza em uma estrutura plana por modelo/estratégia, que é o formato esperado pelo SonarQube e pelo `run_sonar.sh`:
 
 ```
-classeval_quality/data/
+data/
 └── GPT-4-Turbo_method_C_greedy/
     └── AccessGatewayFilter/
         ├── AccessGatewayFilter0Error.py
         ├── AccessGatewayFilter1Success.py
         └── ...
 ```
-
-O conteúdo resultante dessa estrutura é o que está em `data/` neste repositório.
 
 ## Estrutura
 
@@ -110,7 +132,8 @@ O conteúdo resultante dessa estrutura é o que está em `data/` neste repositó
 ├── compose.yaml               # Sobe o SonarQube com a imagem pré-populada
 ├── run_sonar.sh               # Reenvia todos os projetos ao SonarQube
 ├── sonar-project.properties   # Configuração base dos projetos Sonar
-└── data/
+├── classEval_output/          # Saída intermediária do take_solution.py
+└── data/                      # Entrada do SonarQube (saída do group_filtered_solutions.py)
     ├── GPT-4-Turbo_class_H_greedy/
     ├── GPT-4-Turbo_method_C_greedy/
     ├── GPT-4-Turbo_method_I_greedy/
