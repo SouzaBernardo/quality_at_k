@@ -1,5 +1,7 @@
 # Quality@K — Análise de Qualidade Estática de Código Gerado por LLMs
 
+> 🇺🇸 [Read in English](docs/README.en.md)
+
 Este repositório contém o pipeline de análise estática utilizado no TCC *"Avaliação da Qualidade de Código Gerado por Large Language Models"*. O objetivo é investigar se código funcionalmente correto (medido pelo Pass@k do benchmark ClassEval) também apresenta boa qualidade estrutural, medida via SonarQube.
 
 ## Contexto
