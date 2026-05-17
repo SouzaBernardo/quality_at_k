@@ -73,6 +73,34 @@ docker compose up -d
 
 O script envia cada projeto para o SonarQube via `pysonar`, usando os tokens de autenticação já configurados.
 
+## Origem do diretório `data/`
+
+Os arquivos em `data/` **não são gerados neste repositório** — eles são o resultado de dois scripts executados dentro do repositório do benchmark [ClassEval](https://github.com/FudanSELab/ClassEval), sobre os arquivos brutos de saída dos modelos.
+
+### Passo 1 — `scripts/take_solution.py`
+
+Lê os JSONs brutos em `output/model_output_v1.0.0/` do ClassEval, extrai o campo `predict` de cada geração e:
+
+- Remove artefatos de Markdown e linguagem natural (blocos ` ```python `, explicações, notas) das respostas dos modelos
+- Cruza cada geração com `output/result/detailed_result.json` para obter o desfecho nos testes unitários (`Success`, `PartialSuccess`, `Fail`, `Error`)
+- Nomeia cada arquivo com o padrão `<Classe><índice><Status>.py` — por exemplo, `AccessGatewayFilter0Error.py`
+- Salva as versões original e sanitizada (`filtered/`) separadamente
+
+### Passo 2 — `scripts/group_filtered_solutions.py`
+
+Agrupa os arquivos `filtered/` gerados pelo passo anterior em uma estrutura plana por modelo/estratégia, que é exatamente o formato esperado pelo SonarQube e pelo `run_sonar.sh`:
+
+```
+classeval_quality/data/
+└── GPT-4-Turbo_method_C_greedy/
+    └── AccessGatewayFilter/
+        ├── AccessGatewayFilter0Error.py
+        ├── AccessGatewayFilter1Success.py
+        └── ...
+```
+
+O conteúdo resultante dessa estrutura é o que está em `data/` neste repositório.
+
 ## Estrutura
 
 ```
