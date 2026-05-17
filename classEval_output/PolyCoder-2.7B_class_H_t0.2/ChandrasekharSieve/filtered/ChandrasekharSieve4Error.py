@@ -1,0 +1,130 @@
+class ChandrasekharSieve:
+    """
+    This is a class that uses the Chandrasekhar's Sieve method to find all prime numbers within the range
+    """
+
+    def __init__(self, n):
+        """
+        Initialize the ChandrasekharSieve class with the given limit.
+        :param n: int, the upper limit for generating prime numbers
+        """
+        self.n = n
+        self.primes = self.generate_primes()
+
+    def generate_primes(self):
+        """
+        Generate prime numbers up to the specified limit using the Chandrasekhar sieve algorithm.
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.generate_primes()
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+
+    def get_primes(self):
+        """
+        Get the list of generated prime numbers.
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.get_primes()
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        return self.primes
+
+    def find_primes(self, n):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.find_primes(20)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        if n > self.n:
+            raise ValueError("n must be less than or equal to the upper limit")
+        primes = []
+        for i in range(self.n - n):
+            primes.append(i)
+        return primes
+
+    def find_primes_with_limit(self, n):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.find_primes_with_limit(20)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        if n > self.n:
+            raise ValueError("n must be less than or equal to the upper limit")
+        primes = []
+        for i in range(self.n - n):
+            primes.append(i)
+        return primes
+
+    def find_primes_with_limit_and_number(self, n, number):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :param number: int, the number to find
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.find_primes_with_limit_and_number(20, 5)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        if n > self.n:
+            raise ValueError("n must be less than or equal to the upper limit")
+        primes = []
+        for i in range(self.n - n):
+            primes.append(i)
+        return primes
+
+    def find_primes_with_limit_and_number_and_number(self, n, number, number2):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :param number: int, the number to find
+        :param number2: int, the number to find
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.find_primes_with_limit_and_number_and_number(20, 5, 5)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        if n > self.n:
+            raise ValueError("n must be less than or equal to the upper limit")
+        primes = []
+        for i in range(self.n - n):
+            primes.append(i)
+        return primes
+
+    def find_primes_with_limit_and_number_and_number_and_number(self, n, number, number2, number3):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :param number: int, the number to find
+        :param number2: int, the number to find
+        :param number3: int, the number to find
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.find_primes_with_limit_and_number_and_number_and_number(20, 5, 5, 5)
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        if n > self.n:
+            raise ValueError("n must be less than or equal to the upper limit")
+        primes = []
+        for i in range(self.n - n):
+            primes.append(i)
+        return primes
+
+    def find_primes_with_limit_and_number_and_number_and_number_and_number(self, n, number, number2, number3, number4):
+        """
+        Find all prime numbers within the given range.
+        :param n: int, the upper limit for generating prime numbers
+        :param number: int, the number to

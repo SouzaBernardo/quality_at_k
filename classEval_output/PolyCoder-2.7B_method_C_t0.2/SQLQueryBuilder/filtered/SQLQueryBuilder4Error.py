@@ -1,0 +1,66 @@
+class SQLQueryBuilder: 
+
+
+    def select(table, columns='*', where=None):
+        """
+        Generate the SELECT SQL statement from the given parameters.
+        :param table: str, the query table in database.
+        :param columns: list of str, ['col1', 'col2'].
+        :param where: dict, {key1: value1, key2: value2...}. The query condition.
+        return query: str, the SQL query statement.
+        >>> SQLQueryBuilder.select('table1', columns = ["col1","col2"], where = {"age": 15})
+        "SELECT col1, col2 FROM table1 WHERE age='15'"
+        """
+        if not table:
+            raise Exception("table is empty")
+        if not columns:
+            raise Exception("columns is empty")
+        if not where:
+            raise Exception("where is empty")
+        query = "SELECT %s FROM %s WHERE %s" % (columns, table, where)
+        return query
+
+
+    def insert(table, data):
+        """
+        Generate the INSERT SQL statement from the given parameters.
+        :param table: str, the table to be inserted in database.
+        :param data: dict, the key and value in SQL insert statement
+        :return query: str, the SQL insert statement.
+        >>> SQLQueryBuilder.insert('table1', {'name': 'Test', 'age': 14})
+        "INSERT INTO table1 (name, age) VALUES ('Test', '14')"
+        """
+        return "INSERT INTO {} ({}) VALUES ({})".format(table, ', '.join(data.keys()), ', '.join(data.values()))
+
+
+
+
+    def delete(table, where=None):
+        """
+        Generate the DELETE SQL statement from the given parameters.
+        :param table: str, the table that will be excuted with DELETE operation in database
+        :param where: dict, {key1: value1, key2: value2...}. The query condition.
+        :return query: str, the SQL delete statement.
+        >>> SQLQueryBuilder.delete('table1', {'name': 'Test', 'age': 14})
+        "DELETE FROM table1 WHERE name='Test' AND age='14'"
+        """
+        query = 'DELETE FROM '
+        query += table
+        query +='WHERE '
+        query +='name =? AND '
+        query +='age =?'
+        query +=''
+        query += 'AND '
+        query +='( '
+        query +='                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+
+    def update(table, data, where=None):
+        """
+        Generate the UPDATE SQL statement from the given parameters.
+        :param table: str, the table that will be excuted with UPDATE operation in database
+        :param data: dict, the key and value in SQL update statement
+        :param where: dict, {key1: value1, key2: value2...}. The query condition.
+        >>> SQLQueryBuilder.update('table1', {'name': 'Test2', 'age': 15}, where = {'name':'Test'})
+        "UPDATE table1 SET name='Test2', age='15' WHERE name='Test'"
+        """
+        return 'UPDATE table1 SET name =?, age =? WHERE name =?'

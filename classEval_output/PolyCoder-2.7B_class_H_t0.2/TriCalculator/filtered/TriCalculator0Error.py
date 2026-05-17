@@ -1,0 +1,193 @@
+from math import pi, fabs
+
+class TriCalculator:
+    """
+    The class allows to calculate trigonometric values, including cosine, sine, and tangent, using Taylor series approximations.
+    """
+
+
+    def __init__(self):
+        pass
+
+    def cos(self, x):
+        """
+        Calculate the cos value of the x-degree angle
+        :param x:float
+        :return:float
+        >>> tricalculator = TriCalculator()
+        >>> tricalculator.cos(60)
+        0.5
+        """
+
+    def factorial(self, a):
+        """
+        Calculate the factorial of a
+        :param a: int
+        :return: int
+        >>> tricalculator.factorial(5)
+        120
+        """
+
+    def taylor(self, x, n):
+        """
+        Finding the n-order Taylor expansion value of cos (x/180 * pi)
+        :param x: int
+        :param n: int
+        :return: float
+        >>> tricalculator.taylor(60, 50)
+        0.5000000000000001
+        """
+
+    def sin(self, x):
+        """
+        Calculate the sin value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.sin(30)
+        0.5
+        """
+
+
+    def tan(self, x):
+        """
+        Calculate the tan value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.tan(45)
+        1.0
+        """
+
+
+    def tanh(self, x):
+        """
+        Calculate the tanh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.tanh(45)
+        1.0
+        """
+
+
+    def atan(self, x):
+        """
+        Calculate the atan value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.atan(45)
+        0.5
+        """
+
+
+    def atanh(self, x):
+        """
+        Calculate the atanh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.atanh(45)
+        0.5
+        """
+
+
+    def sinh(self, x):
+        """
+        Calculate the sinh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.sinh(45)
+        0.5
+        """
+
+
+    def cosh(self, x):
+        """
+        Calculate the cosh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.cosh(45)
+        0.5
+        """
+
+
+    def tanh(self, x):
+        """
+        Calculate the tanh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.tanh(45)
+        1.0
+        """
+
+
+    def asinh(self, x):
+        """
+        Calculate the asinh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.asinh(45)
+        0.5
+        """
+
+
+    def acosh(self, x):
+        """
+        Calculate the acosh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.acosh(45)
+        0.5
+        """
+
+
+    def atanh(self, x):
+        """
+        Calculate the atanh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.atanh(45)
+        0.5
+        """
+
+
+    def asinh(self, x):
+        """
+        Calculate the asinh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.asinh(45)
+        0.5
+        """
+
+
+    def acosh(self, x):
+        """
+        Calculate the acosh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.acosh(45)
+        0.5
+        """
+
+
+    def atanh(self, x):
+        """
+        Calculate the atanh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.atanh(45)
+        0.5
+        """
+
+
+    def asinh(self, x):
+        """
+        Calculate the asinh value of the x-degree angle
+        :param x: float
+        :return: float
+        >>> tricalculator.asinh(45)
+        0.5
+        """
+
+
+    def acosh(self, x):
+        """
+        Calculate the acosh value of the x-degree angle

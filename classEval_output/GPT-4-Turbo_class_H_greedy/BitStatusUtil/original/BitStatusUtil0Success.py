@@ -1,0 +1,30 @@
+```python
+class BitStatusUtil:
+    """
+    This is a utility class that provides methods for manipulating and checking status using bitwise operations.
+    """
+
+    @staticmethod
+    def add(states, stat):
+        BitStatusUtil.check([states, stat])
+        return states | stat
+
+    @staticmethod
+    def has(states, stat):
+        BitStatusUtil.check([states, stat])
+        return (states & stat) == stat
+
+    @staticmethod
+    def remove(states, stat):
+        BitStatusUtil.check([states, stat])
+        if BitStatusUtil.has(states, stat):
+            return states ^ stat
+        else:
+            return states
+
+    @staticmethod
+    def check(args):
+        for arg in args:
+            if arg < 0 or arg % 2 != 0:
+                raise ValueError(f"{arg} not even")
+```
