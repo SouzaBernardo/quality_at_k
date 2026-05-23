@@ -1,0 +1,43 @@
+import random
+class Snake:  
+    """
+    The class is a snake game, with allows snake to move and eat food, and also enables to reset, and generat a random food position.
+    """
+
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE, food_position):
+        """
+        Initialize the length of the snake, screen width, screen height, block size, snake head position, score, and food position.
+        :param SCREEN_WIDTH: int
+        :param SCREEN_HEIGHT: int
+        :param BLOCK_SIZE: int, Size of moving units
+        :param food_position: tuple, representing the position(x, y) of food.
+        """
+        self.length = 1
+        self.SCREEN_WIDTH = SCREEN_WIDTH
+        self.SCREEN_HEIGHT = SCREEN_HEIGHT
+        self.BLOCK_SIZE = BLOCK_SIZE
+        self.positions = [((SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2))]
+        self.score = 0
+        self.food_position = food_position
+
+
+
+    def move(self, direction):
+        """
+        Move the snake in the specified direction. If the new position of the snake's head is equal to the position of the food, then eat the food; If the position of the snake's head is equal to the position of its body, then start over, otherwise its own length plus one.
+        :param direction: tuple, representing the direction of movement (x, y).
+        :return: None
+        >>> snake.move((1,1))
+        self.length = 1
+        self.positions = [(51, 51), (50, 50)]
+        self.score = 10
+        """
+        
+        if direction == (0, 0):
+            self.positions.pop()
+            self.length -= 1
+            self.score += 10
+            self.food_position = (random.randint(0, self.SCREEN_WIDTH), random.randint(0, self.SCREEN_HEIGHT))
+        else:
+            self.positions.append((self.positions[-1][0] + self.BLOCK_SIZE, self.positions[-1][1] + self.BLOCK_SIZE))
+            self.length += 1

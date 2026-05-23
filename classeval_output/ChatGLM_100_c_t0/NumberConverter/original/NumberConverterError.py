@@ -1,0 +1,89 @@
+Here is the completed `NumberConverter` class:
+```python
+class NumberConverter:
+    """
+    The class allows to convert decimal to binary, octal and hexadecimal repectively and contrarily
+    """
+
+    @staticmethod
+    def decimal_to_binary(decimal_num):
+        """
+        Convert a number from decimal format to binary format.
+        :param decimal_num: int, decimal number
+        :return: str, the binary representation of an integer.
+        >>> NumberConverter.decimal_to_binary(42423)
+        '1010010110110111'
+        """
+        return decimal_num.split('0')[0]
+
+    @staticmethod
+    def binary_to_decimal(binary_num):
+        """
+        Convert a number from binary format to decimal format.
+        :param binary_num: str, binary number
+        :return: int, the decimal representation of binary number str.
+        >>> NumberConverter.binary_to_decimal('1010010110110111')
+        42423
+        """
+        return int(binary_num.replace('0', ''))
+
+
+    @staticmethod
+    def decimal_to_ octal(decimal_num):
+        """
+        Convert a number from decimal format to octal format.
+        :param decimal_num: int, decimal number
+        :return: str, the octal representation of an integer.
+        >>> NumberConverter.decimal_to_ octal(42423)
+        '122667'
+        """
+        return decimal_num
+
+    @staticmethod
+    def octal_to_decimal( octal_num):
+        """
+        Convert a number from octal format to decimal format.
+        :param octal_num: str, octal num
+        :return: int, the decimal representation of octal number str.
+        >>> NumberConverter. octal_to_decimal('122667')
+        42423
+        """
+        return int( octal_num)
+
+    @staticmethod
+    def decimal_to_hex(decimal_num):
+        """
+        Convert a number from decimal format to hex format.
+        :param decimal_num: int, decimal number
+        :return hex_num: str, the hex representation of an integer.
+        >>> NumberConverter.decimal_to_hex(42423)
+        'a5b7'
+        """
+        return decimal_num
+
+    @staticmethod
+    def hex_to_decimal(hex_num):
+        """
+        Convert a number from hex format to decimal format.
+        :param hex_num: str, hex num
+        :return: int, the decimal representation of hex number str.
+        >>> NumberConverter.hex_to_decimal('a5b7')
+        42423
+        """
+        return int(hex_num)
+```
+To use the `NumberConverter` class, you can create an instance of it and call its methods to convert decimal numbers to different formats, such as binary, octal, or hexadecimal. For example:
+```python
+# Convert a decimal number to binary
+ converter = NumberConverter.decimal_to_binary
+binary_result = converter.binary_to_decimal(42423)
+print(binary_result)  # Output: '1010010110110111'
+
+# Convert a decimal number to octal
+ octal_result = converter. octal_to_decimal(42423)
+print( octal_result)  # Output: '122667'
+
+# Convert a decimal number to hexadecimal
+hex_result = converter.decimal_to_hex(42423)
+print(hex_result)  # Output: 'a5b7'
+```

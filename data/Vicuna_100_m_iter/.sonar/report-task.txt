@@ -1,0 +1,6 @@
+projectKey=Vicuna_100_m_iter
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=Vicuna_100_m_iter
+ceTaskId=48da8b60-3db1-4d6d-8dfa-899c8682af39
+ceTaskUrl=http://localhost:9000/api/ce/task?id=48da8b60-3db1-4d6d-8dfa-899c8682af39

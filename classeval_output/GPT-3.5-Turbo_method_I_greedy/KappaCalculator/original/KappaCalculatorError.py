@@ -1,0 +1,58 @@
+import numpy as np
+class KappaCalculator:  
+    """
+    This is a class as KappaCalculator, supporting to calculate Cohen's and Fleiss' kappa coefficient.
+    """
+
+
+
+@staticmethod
+    def kappa(testData, k):
+        """
+        Calculate the cohens kappa value of a k-dimensional matrix
+        :param testData: The k-dimensional matrix that needs to calculate the cohens kappa value
+        :param k: int, Matrix dimension
+        :return: float, the cohens kappa value of the matrix
+        >>> KappaCalculator.kappa([[2, 1, 1], [1, 2, 1], [1, 1, 2]], 3)
+        0.25
+        """
+        # Your code to calculate the cohens kappa value goes here
+        # You can use the numpy library to perform the necessary calculations
+        
+        # Return the calculated cohens kappa value
+        
+
+
+    @staticmethod
+    def fleiss_kappa(testData, N, k, n):
+        """
+        Calculate the fliss kappa value of an N * k matrix
+        :param testData: Input data matrix, N * k
+        :param N: int, Number of samples
+        :param k: int, Number of categories
+        :param n: int, Number of raters
+        :return: float, fleiss kappa value
+        >>> KappaCalculator.fleiss_kappa([[0, 0, 0, 0, 14],
+                                         [0, 2, 6, 4, 2],
+                                         [0, 0, 3, 5, 6],
+                                         [0, 3, 9, 2, 0],
+                                         [2, 2, 8, 1, 1],
+                                         [7, 7, 0, 0, 0],
+                                         [3, 2, 6, 3, 0],
+                                         [2, 5, 3, 2, 2],
+                                         [6, 5, 2, 1, 0],
+                                         [0, 2, 2, 3, 7]], 10, 5, 14)
+        0.20993070442195522
+        """
+        # Calculate the observed agreement
+        observed_agreement = np.sum(testData * (testData - 1), axis=1) / (n * (n - 1))
+    
+        # Calculate the expected agreement
+        p_j = np.sum(testData, axis=0) / (n * N)
+        expected_agreement = np.sum(p_j ** 2)
+    
+        # Calculate the fleiss kappa value
+        fleiss_kappa = (np.mean(observed_agreement) - np.mean(expected_agreement)) / (1 - np.mean(expected_agreement))
+    
+        return fleiss_kappa
+    

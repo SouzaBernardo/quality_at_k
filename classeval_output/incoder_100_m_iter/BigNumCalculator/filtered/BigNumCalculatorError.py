@@ -1,0 +1,24 @@
+class BigNumCalculator:  
+    """
+    This is a class that implements big number calculations, including adding, subtracting and multiplying.
+    """
+
+
+    def add(num1, num2):
+        """
+        Adds two big numbers.
+        :param num1: The first number to add，str.
+        :param num2: The second number to add，str.
+        :return: The sum of the two numbers，str.
+        >>> bigNum = BigNumCalculator()
+        >>> bigNum.add("12345678901234567890", "98765432109876543210")
+        '111111111011111111100'
+
+        """
+        sum = 0
+        carry = 0
+        for i in range(len(num1)):
+            digit = int(num1[i]) + int(num2[i]) + carry
+            sum = digit if digit < 10 else digit - 10 + sum
+            carry = 1 if digit > 9 else 0
+        return str(sum) + str(carry)

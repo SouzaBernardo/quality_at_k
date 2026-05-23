@@ -1,0 +1,52 @@
+import random
+class Snake:  
+    """
+    The class is a snake game, with allows snake to move and eat food, and also enables to reset, and generat a random food position.
+    """
+
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE, food_position):
+        """
+        Initialize the length of the snake, screen width, screen height, block size, snake head position, score, and food position.
+        :param SCREEN_WIDTH: int
+        :param SCREEN_HEIGHT: int
+        :param BLOCK_SIZE: int, Size of moving units
+        :param food_position: tuple, representing the position(x, y) of food.
+        """
+        self.length = 1
+        self.SCREEN_WIDTH = SCREEN_WIDTH
+        self.SCREEN_HEIGHT = SCREEN_HEIGHT
+        self.BLOCK_SIZE = BLOCK_SIZE
+        self.positions = [((SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2))]
+        self.score = 0
+        self.food_position = food_position
+
+
+
+
+    def move(self, direction):
+        if self.positions[0] == self.food_position:
+            self.eat()
+        elif self.positions[0] == self.positions[1]:
+            self.reset()
+        else:
+            self.positions.append(direction)
+            self.length += 1
+
+    def random_food_position(self):
+        food_position = (random.randint(0, self.SCREEN_WIDTH - self.BLOCK_SIZE), random.randint(0, self.SCREEN_HEIGHT - self.BLOCK_SIZE))
+        self.food_position = food_position
+
+
+
+    def eat_food(self):
+        """
+        Increase the length of the snake by 1 and increase the score by 100. Randomly generate a new food position, but
+        don't place it on the snake.
+        :return: None
+        >>> snake = Snake(100, 100, 1, (51, 51))
+        >>> snake.move((1,1))
+        >>> snake.eat_food()
+        self.length = 2
+        self.score = 10
+        """
+        self.food_position = self.random_food_position()

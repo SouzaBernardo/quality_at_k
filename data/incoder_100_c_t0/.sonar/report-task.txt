@@ -1,0 +1,6 @@
+projectKey=incoder_100_c_t0
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=incoder_100_c_t0
+ceTaskId=25dfc0ea-2333-4d37-9739-76d2f65c1cdf
+ceTaskUrl=http://localhost:9000/api/ce/task?id=25dfc0ea-2333-4d37-9739-76d2f65c1cdf

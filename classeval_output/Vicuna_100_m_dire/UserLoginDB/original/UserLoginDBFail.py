@@ -1,0 +1,60 @@
+import sqlite3
+class UserLoginDB: 
+    def __init__(self, db_name):
+        """
+        Initializes the UserLoginDB object with the specified database name.
+        :param db_name: str, the name of the SQLite database.
+        """
+        self.connection = sqlite3.connect(db_name)
+        self.cursor = self.connection.cursor()
+
+
+
+    def insert_user(self, username, password):
+        """
+        Inserts a new user into the "users" table.
+    
+        :param username: str, the username of the user.
+        :param password: str, the password of the user.
+        :return: None
+        >>> user_db = UserLoginDB("user_database.db")
+        >>> user_db.create_table()
+        >>> user_db.insert_user('user1', 'pass1')
+        """
+        cursor = self.cursor
+        sql = """
+        INSERT INTO users (username, password)
+        VALUES (?, ?);
+        """
+        cursor.execute(sql, (username, password))
+        self.connection.commit()
+
+    def search_user_by_username(self, username):
+        """
+        Searches for users in the "users" table by username.
+        :param username: str, the username of the user to search for.
+        :return:list of tuples, the rows from the "users" table that match the search criteria.
+        >>> user_db = UserLoginDB("user_database.db")
+        >>> user_db.create_table()
+        >>> user_db.insert_user('user1', 'pass1')
+        >>> result = user_db.search_user_by_username('user1')
+        len(result) = 1
+        """
+        cursor = self.cursor
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        result = cursor.fetchall()
+        return result
+
+    def delete_user_by_username(self, username):
+        cursor = self.cursor
+        cursor.execute("DELETE FROM users WHERE username=?", (username,))
+        self.connection.commit()
+
+    def validate_user_login(self, username, password):
+        cursor = self.cursor
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        result = cursor.fetchone()
+        if result:
+            return True
+        else:
+            return False

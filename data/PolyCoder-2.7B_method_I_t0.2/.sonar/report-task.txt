@@ -1,6 +1,0 @@
-projectKey=PolyCoder-2.7B_method_I_t0.2
-serverUrl=http://localhost:9000
-serverVersion=26.4.0.121862
-dashboardUrl=http://localhost:9000/dashboard?id=PolyCoder-2.7B_method_I_t0.2
-ceTaskId=a31a16fb-9b28-44b0-870e-0a77ac208df1
-ceTaskUrl=http://localhost:9000/api/ce/task?id=a31a16fb-9b28-44b0-870e-0a77ac208df1

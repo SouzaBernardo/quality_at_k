@@ -1,0 +1,6 @@
+projectKey=starcoder-instruct-15B_method_C_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=starcoder-instruct-15B_method_C_greedy
+ceTaskId=e7022219-335b-4c48-83b6-5bc1421574d5
+ceTaskUrl=http://localhost:9000/api/ce/task?id=e7022219-335b-4c48-83b6-5bc1421574d5

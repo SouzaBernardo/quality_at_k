@@ -1,0 +1,6 @@
+projectKey=Vicuna_100_m_dire
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=Vicuna_100_m_dire
+ceTaskId=df79b630-1d21-41a4-a26a-ad4217d71459
+ceTaskUrl=http://localhost:9000/api/ce/task?id=df79b630-1d21-41a4-a26a-ad4217d71459

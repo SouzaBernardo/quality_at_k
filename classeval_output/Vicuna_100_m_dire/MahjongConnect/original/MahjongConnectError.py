@@ -1,0 +1,103 @@
+import random
+class MahjongConnect: 
+    def __init__(self, BOARD_SIZE, ICONS):
+        """
+        initialize the board size and the icon list, create the game board
+        :param BOARD_SIZE: list of two integer numbers, representing the number of rows and columns of the game board
+        :param ICONS: list of string, representing the icons
+        >>>mc = MahjongConnect([4, 4], ['a', 'b', 'c'])
+        mc.BOARD_SIZE = [4, 4]
+        mc.ICONS = ['a', 'b', 'c']
+        mc.board = mc.create_board()
+        """
+        self.BOARD_SIZE = BOARD_SIZE
+        self.ICONS = ICONS
+        self.board = self.create_board()
+
+
+
+    def create_board(self):
+        """
+        create the game board with the given board size and icons
+        :return: 2-dimensional list, the game board
+        """
+        board = [[random.choice(self.ICONS) for _ in range(self.BOARD_SIZE[0])] for _ in range(self.BOARD_SIZE[1])]
+        return board
+
+    def print_board(self):
+        """
+        print the game board
+        :return: None
+        """
+        for row in range(self.BOARD_SIZE[0]):
+            print("".join(["." for _ in range(self.BOARD_SIZE[1])]))
+            for col in range(self.BOARD_SIZE[1]):
+                print(f"{self.board[row][col]}")
+            print()
+
+    def is_valid_move(self, pos1, pos2):
+        """
+        check if the move of two icons is valid (i.e. positions are within the game board range, the two positions are not the same, the two positions have the same icon, and there is a valid path between the two positions)
+        :param pos1: position tuple(x, y) of the first icon
+        :param pos2: position tuple(x, y) of the second icon
+        :return:True or False ,representing whether the move of two icons is valid
+        >>> mc = MahjongConnect([4, 4], ['a', 'b', 'c'])
+        mc.board = [['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a']]
+        >>> mc.is_valid_move((0, 0), (1, 0))
+        True
+
+    def has_path(self, pos1, pos2):
+        """
+        check if there is a path between two icons
+        :param pos1: position tuple(x, y) of the first icon
+        :param pos2: position tuple(x, y) of the second icon
+        :return: True or False ,representing whether there is a path between two icons
+        >>> mc = MahjongConnect([4, 4], ['a', 'b', 'c'])
+            mc.board = [['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a']]
+            >>> mc.is_valid_move((0, 0), (1, 0))
+            True
+        """
+        for i in range(self.BOARD_SIZE[0]):
+            for j in range(self.BOARD_SIZE[1]):
+                if pos1[0] == j and pos1[1] == i and pos2[0] == j and pos2[1] == i:
+                    return True
+            if pos1[0] == j and pos1[1] == i and pos2[0] == j and pos2[1] == i:
+                return True
+        return False
+
+    def remove_icons(self, pos1, pos2):
+        """
+        remove the connected icons on the game board
+        :param pos1: position tuple(x, y) of the first icon to be removed
+        :param pos2: position tuple(x, y) of the second icon to be removed
+        :return: None
+        >>> mc = MahjongConnect([4, 4], ['a', 'b', 'c'])
+        mc.board = [['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a']]
+        >>> mc.remove_icons((0, 0), (1, 0))
+        mc.board = [[' ', 'b', 'c', 'a'],
+                        [' ', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a'],
+                        ['a', 'b', 'c', 'a']]
+        """
+        for row in self.board:
+            if pos1[0] in row and pos2[0] in row:
+                row.remove(pos1[1])
+                row.remove(pos2[1])
+
+    def is_game_over(self):
+        """
+        Check if the game is over (i.e., if there are no more icons on the game board)
+        :return: True or False ,representing whether the game is over
+        """
+        if not self.board:
+            return True
+        return False

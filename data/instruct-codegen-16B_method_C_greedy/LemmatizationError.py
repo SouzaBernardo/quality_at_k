@@ -1,0 +1,34 @@
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag, word_tokenize
+import string
+class Lemmatization: 
+    def __init__(self):
+        """
+        creates a WordNetLemmatizer object and stores it in the self.lemmatizer member variable.
+        """
+        self.lemmatizer = WordNetLemmatizer()
+
+
+
+    def lemmatize_sentence(self, sentence):
+        """
+        Remove punctuations of the sentence and tokenizes the input sentence, mark the part of speech tag of each word,
+        lemmatizes the words with different parameters based on their parts of speech, and stores in a list.
+        :param sentence: a sentence str
+        :return: a list of words which have been lemmatized.
+        >>> lemmatization = Lemmatization()
+        >>> lemmatization.lemmatize_sentence("I am running in a race.")
+        ['I', 'be', 'run', 'in', 'a', 'race']
+        """
+
+        """
+
+    def remove_punctuation(self, sentence):
+        """
+        :param sentence: a sentence str
+        :return: str, sentence without any punctuation
+        >>> lemmatization = Lemmatization()
+        >>> lemmatization.remove_punctuation("I am running in a race.")
+        'I am running in a race'
+        """

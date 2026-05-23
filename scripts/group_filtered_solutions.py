@@ -18,7 +18,7 @@ def main():
     for file_name in os.listdir(input_dir):
         file_dir = input_dir / file_name
         for file_class in os.listdir(file_dir):
-            output_save_dir = output_dir / file_name / file_class
+            output_save_dir = output_dir / file_name
             create_dir(output_save_dir)
             class_content_dir = file_dir / file_class / "filtered"
             for class_content in os.listdir(class_content_dir):

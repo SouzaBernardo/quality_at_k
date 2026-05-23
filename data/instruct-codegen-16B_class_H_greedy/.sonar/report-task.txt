@@ -1,0 +1,6 @@
+projectKey=instruct-codegen-16B_class_H_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=instruct-codegen-16B_class_H_greedy
+ceTaskId=8652872e-e8ed-4a24-a1c1-9214ff330b9e
+ceTaskUrl=http://localhost:9000/api/ce/task?id=8652872e-e8ed-4a24-a1c1-9214ff330b9e

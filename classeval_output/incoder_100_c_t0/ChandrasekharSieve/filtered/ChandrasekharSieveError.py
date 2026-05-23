@@ -1,0 +1,91 @@
+class ChandrasekharSieve:  
+    """
+    This is a class that uses the Chandrasekhar's Sieve method to find all prime numbers within the range
+    """
+
+    def __init__(self, n):
+        """
+        Initialize the ChandrasekharSieve class with the given limit.
+        :param n: int, the upper limit for generating prime numbers
+        """
+        self.n = n
+        self.primes = self.generate_primes()
+
+
+    def generate_primes(self):
+        """
+        Generate prime numbers up to the specified limit using the Chandrasekhar sieve algorithm.
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.generate_primes()
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        primes = []
+        sieve = [True] * self.n
+        sieve[0] = False
+        sieve[1] = False
+        sieve[2] = True
+        sieve[3] = True
+        sieve[4] = True
+        sieve[5] = True
+        sieve[6] = True
+        sieve[7] = True
+        sieve[8] = True
+        sieve[9] = True
+        sieve[10] = True
+        sieve[11] = True
+        sieve[12] = True
+        sieve[13] = True
+        sieve[14] = True
+        sieve[15] = True
+        sieve[16] = True
+        sieve[17] = True
+        sieve[18] = True
+        sieve[19] = True
+        sieve[20] = True
+        
+        for i in range(2, self.n):
+            if sieve[i]:
+                primes.append(i)
+                sieve[i * i::self.n] = False
+        return primes
+
+    def get_primes(self):
+        """
+        Get the list of generated prime numbers.
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.get_primes()
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        primes = []
+        sieve = [True] * self.n
+        sieve[0] = False
+        sieve[1] = False
+        sieve[2] = True
+        sieve[3] = True
+        sieve[4] = True
+        sieve[5] = True
+        sieve[6] = True
+        sieve[7] = True
+        sieve[8] = True
+        sieve[9] = True
+        sieve[10] = True
+        sieve[11] = True
+        sieve[12] = True
+        sieve[13] = True
+        sieve[14] = True
+        sieve[15] = True
+        sieve[16] = True
+        sieve[17] = True
+        sieve[18] = True
+        sieve[19] = True
+        sieve[20] = True
+        
+        for i in range(2, self.n):
+            if sieve[i]:
+                primes.append(i)
+                sieve[i * i::self.n] = False
+        return primes

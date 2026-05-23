@@ -1,0 +1,73 @@
+import sqlite3
+class BookManagementDB:  
+    """
+    This is a database class as a book management system, used to handle the operations of adding, removing, updating, and searching books.
+    """
+
+    def __init__(self, db_name):
+        """
+        Initializes the class by creating a database connection and cursor, 
+        and creates the book table if it does not already exist
+        :param db_name: str, the name of db file
+        """
+        self.connection = sqlite3.connect(db_name)
+        self.cursor = self.connection.cursor()
+        self.create_table()
+
+
+
+    def create_table(self):
+        """
+        Creates the book table in the database if it does not already exist
+        """
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS books (
+        book_id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        author TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        isbn INTEGER NOT NULL UNIQUE
+
+    def add_book(self, title, author):
+        """
+        Adds a book to the database with the specified title and author,
+        setting its availability to 1 as free to borrow.
+        :param title: str, book title
+        :param author: str, author name
+        """
+        self.cursor.execute("""INSERT INTO books (title, author, year, isbn) VALUES (?,?,?,?)""", (title, author, 0, 0))
+        self.connection.commit()
+
+    def remove_book(self, book_id):
+        """
+        :param book_id: int
+        >>> book_db = BookManagementDB("test.db")
+        >>> book_db.remove_book(1)
+        """
+        self.cursor.execute("""DELETE FROM books WHERE book_id =?""", (book_id,))
+        self.connection.commit()
+
+    def borrow_book(self, book_id):
+        """
+        :param book_id: int
+        >>> book_db = BookManagementDB("test.db")
+        >>> book_db.borrow_book(1)
+        """
+        self.cursor.execute("""UPDATE books SET availability = 1 WHERE book_id =?""", (book_id,))
+        self.connection.commit()
+
+    def return_book(self, book_id):
+        """
+        :param book_id: int
+        >>> book_db = BookManagementDB("test.db")
+        >>> book_db.return_book(1)
+        """
+        self.cursor.execute("""UPDATE books SET availability = 0 WHERE book_id =?""", (book_id,))
+        self.connection.commit()
+
+    def search_books(self):
+        """
+        :return books: list[tuple], the information of all books in database
+        """
+        self.cursor.execute("""SELECT book_id, title, author, year, isbn FROM books""")
+        books = self.cursor.fetchall()
+        return books

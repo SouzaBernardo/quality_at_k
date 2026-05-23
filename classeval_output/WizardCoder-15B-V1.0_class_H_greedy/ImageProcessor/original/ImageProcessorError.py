@@ -1,0 +1,84 @@
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+### Instruction:
+Please complete the class ImageProcessor in the following code.
+from PIL import Image, ImageEnhance
+
+class ImageProcessor:
+    """
+    This is a class to process image, including loading, saving, resizing, rotating, and adjusting the brightness of images.
+    """
+
+    def __init__(self):
+        """
+        Initialize self.image
+        """
+        self.image = None
+
+    def load_image(self, image_path):
+        """
+        Use Image util in PIL to open a image
+        :param image_path: str, path of image that is to be
+        >>> processor.load_image('test.jpg')
+        >>> processor.image
+        <PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=3072x4096 at 0x194F2412A48>
+        """
+
+    def save_image(self, save_path):
+        """
+        Save image to a path if image has opened
+        :param save_path: str, the path that the image will be saved
+        >>> processor.load_image('test.jpg')
+        >>> processor.save_image('test2.jpg')
+        """
+
+    def resize_image(self, width, height):
+        """
+        Risize the image if image has opened.
+        :param width: int, the target width of image
+        :param height: int, the target height of image
+        >>> processor.load_image('test.jpg')
+        >>> processor.resize_image(300, 300)
+        >>> processor.image.width
+        300
+        >>> processor.image.height
+        300
+        """
+
+    def rotate_image(self, degrees):
+        """
+        rotate image if image has opened
+        :param degrees: float, the degrees that the image will be rotated
+        >>> processor.load_image('test.jpg')
+        >>> processor.resize_image(90)
+        """
+
+    def adjust_brightness(self, factor):
+        """
+        Adjust the brightness of image if image has opened.
+        :param factor: float, brightness of an image. A factor of 0.0 gives a black image. A factor of 1.0 gives the original image.
+        >>> processor.load_image('test.jpg')
+        >>> processor.adjust_brightness(0.5)
+        """
+
+### Response:The class `ImageProcessor` is defined with the following methods:
+
+- `__init__(self)`: Initializes the `image` attribute to `None`.
+- `load_image(self, image_path)`: Uses the `Image` util in PIL to open an image from the given `image_path`.
+- `save_image(self, save_path)`: Saves the opened image to the given `save_path` if the `image` attribute is not `None`.
+- `resize_image(self, width, height)`: Resizes the opened image to the given `width` and `height` if the `image` attribute is not `None`.
+- `rotate_image(self, degrees)`: Rotates the opened image by the given `degrees` if the `image` attribute is not `None`.
+- `adjust_brightness(self, factor)`: Adjusts the brightness of the opened image by the given `factor` if the `image` attribute is not `None`.
+
+The class is tested using the following code:
+
+```python
+processor = ImageProcessor()
+processor.load_image('test.jpg')
+processor.save_image('test2.jpg')
+processor.resize_image(300, 300)
+processor.rotate_image(90)
+processor.adjust_brightness(0.5)
+```
+
+This code loads the image `test.jpg`, saves it to `test2.jpg`, resizes it to 300x300, rotates it by 90 degrees, and adjusts its brightness by 0.5.

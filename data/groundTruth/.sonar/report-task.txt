@@ -1,6 +1,0 @@
-projectKey=GroundTruth
-serverUrl=http://localhost:9000
-serverVersion=26.4.0.121862
-dashboardUrl=http://localhost:9000/dashboard?id=GroundTruth
-ceTaskId=532638b6-554c-4769-8388-abd85ce6972c
-ceTaskUrl=http://localhost:9000/api/ce/task?id=532638b6-554c-4769-8388-abd85ce6972c

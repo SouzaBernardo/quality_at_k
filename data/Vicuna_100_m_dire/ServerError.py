@@ -1,0 +1,42 @@
+class Server: 
+    def __init__(self):
+        """
+        Initialize the whitelist as an empty list, and initialize the sending and receiving information as an empty dictionary
+        """
+        self.white_list = []
+        self.send_struct = {}
+        self.receive_struct = {}
+
+
+
+
+
+
+
+
+
+
+
+    def send(self, info):
+        """
+        Send information containing address and content
+        :param info: dict, information dictionary containing address and content
+        :return: if successfully sent, return nothing; otherwise, return a string indicating an error message
+        >>> server.send({"addr":66,"content":"ABC"})
+        self.send\_struct = {"addr":66,"content":"ABC"}
+        """
+        if info == None:
+            return "Error: info parameter cannot be None"
+        if not isinstance(info, dict):
+            return "Error: info parameter must be a dictionary"
+        if not info:
+            return "Error: info parameter cannot be empty"
+        if not isinstance(info["addr"], int):
+            return "Error: addr parameter must be an integer"
+        if not isinstance(info["content"], str):
+            return "Error: content parameter must be a string"
+        if info["addr"] in self.white\_list:
+            return "Error: address already in white list"
+        self.send\_struct = info
+        self.receive\_struct[info["addr"]] = info["content"]
+        return ""

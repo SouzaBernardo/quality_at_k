@@ -1,0 +1,7 @@
+The class KappaCalculator provides two static methods, kappa and fleiss_kappa, that can be used to calculate Cohen's and Fleiss' kappa coefficient for a given matrix of data.
+
+The kappa method takes in a k-dimensional matrix of test data and returns the Cohen's kappa value. The method uses the numpy library to calculate the sum of the squares of the differences between the predicted and actual values for each category in the matrix. This is then converted to a probability distribution using the normal distribution function and the z-score is calculated to obtain the kappa value.
+
+The fleiss_kappa method takes in an N x k matrix of test data, where N is the number of samples and k is the number of categories, and n is the number of raters. The method returns the Fleiss' kappa value. The method first calculates the mean of the predicted values for each category and then calculates the standard deviation of the predicted values. The z-score is then calculated by subtracting the mean from 2.5, and the Fleiss' kappa value is obtained by dividing the z-score by the standard deviation.
+
+Overall, KappaCalculator provides a convenient and reliable way to calculate kappa coefficients for a given matrix of data.

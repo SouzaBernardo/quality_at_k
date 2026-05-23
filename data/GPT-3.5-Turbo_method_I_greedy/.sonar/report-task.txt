@@ -1,0 +1,6 @@
+projectKey=GPT-3.5-Turbo_method_I_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=GPT-3.5-Turbo_method_I_greedy
+ceTaskId=dec40657-99ad-475c-9a13-dc0fd8bfc59f
+ceTaskUrl=http://localhost:9000/api/ce/task?id=dec40657-99ad-475c-9a13-dc0fd8bfc59f

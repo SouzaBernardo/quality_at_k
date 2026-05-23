@@ -1,0 +1,6 @@
+projectKey=codegeex2-6b_class_H_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=codegeex2-6b_class_H_greedy
+ceTaskId=563a44fb-00c4-45f0-af22-a9f76f6d0059
+ceTaskUrl=http://localhost:9000/api/ce/task?id=563a44fb-00c4-45f0-af22-a9f76f6d0059
