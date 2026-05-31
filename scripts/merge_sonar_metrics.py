@@ -1,16 +1,14 @@
-import json
-import math
 import pathlib
 import re
+
+from compute_fqs import compute_fqs
 
 import pandas as pd
 
 ROOT = pathlib.Path(__file__).parent.parent
 SONAR_DIR = ROOT / "sonar-metrics"
-PASS_AT_K_JSON = ROOT.parent / "ClassEval" / "output" / "result" / "pass_at_k_result.json"
+PASS_AT_K_CSV = SONAR_DIR / "pass_at_greedy_value.csv"
 OUTPUT_CSV = SONAR_DIR / "combined_sonar_metrics.csv"
-
-BETA = 0.1
 
 MODEL_KEY_MAP = {
     "ChatGLM": "ChatGLM",
@@ -37,7 +35,7 @@ _STRATEGY_PATTERNS = [
     (re.compile(r"_100_c_t0$"), "H"),
     (re.compile(r"_100_m_dire$"), "C"),
     (re.compile(r"_100_m_iter$"), "I"),
-    (re.compile(r"$"), "N/A"),  # GroundTruth fallback
+    (re.compile(r"$"), "GT"),  # GroundTruth fallback
 ]
 
 
@@ -60,27 +58,15 @@ def parse_file_status(filename: str) -> tuple[str, str]:
     for suffix in ["PartialSuccess", "Success", "Fail", "Error", "Unknown"]:
         if stem.endswith(suffix):
             return stem[: -len(suffix)], suffix
-    return stem, "N/A"
-
-
-def compute_fqs(status: str, sqale_index, ncloc):
-    if status == "N/A":
-        return None
-    try:
-        si = float(sqale_index)
-        nl = float(ncloc)
-    except (TypeError, ValueError):
-        return None
-    if math.isnan(si) or math.isnan(nl) or nl == 0:
-        return None
-    pass_binary = 1 if status == "Success" else 0
-    penalty = min(1.0, BETA * si / nl)
-    return pass_binary * (1.0 - penalty)
+    return stem, "Success" # GroundTruth fallback
 
 
 def main() -> None:
-    with open(PASS_AT_K_JSON) as f:
-        pass_data = json.load(f)["pass_1"]
+    pass_df = pd.read_csv(PASS_AT_K_CSV)
+    pass_lookup = {
+        (r["model"], r["task"]): r["pass@1_value"]
+        for _, r in pass_df.iterrows()
+    }
 
     csv_files = sorted(SONAR_DIR.glob("sonar_metrics_*_files.csv"))
     if not csv_files:
@@ -92,11 +78,8 @@ def main() -> None:
         model, strategy = parse_filename(csv_path)
 
         model_key = MODEL_KEY_MAP.get(model)
-        if model_key is not None and strategy != "N/A":
-            json_key = f"{model_key}_{strategy}"
-            pass_val = pass_data.get(json_key, {}).get("class_success")
-        else:
-            pass_val = None
+        model_strategy_key = f"{model_key}_{strategy}" if model_key is not None and strategy != "N/A" else None
+        is_ground_truth = (model == "GroundTruth")
 
         df = pd.read_csv(csv_path)
 
@@ -105,13 +88,28 @@ def main() -> None:
             filename = str(row.get("file", ""))
             base_task, status = parse_file_status(filename)
 
+            if is_ground_truth:
+                pass_val = 1.0
+            else:
+                pass_val = pass_lookup.get((model_strategy_key, base_task)) if model_strategy_key else None
+
             ncloc = row.get("ncloc")
             sqale_index = row.get("sqale_index")
             cognitive_complexity = row.get("cognitive_complexity")
             complexity = row.get("complexity")
             code_smells = row.get("code_smells")
 
-            fqs = compute_fqs(status, sqale_index, ncloc)
+            if status == "N/A" or pass_val is None:
+                fqs = None
+            elif status != "Success":
+                fqs = 0.0
+            else:
+                nl = 0.0 if pd.isna(ncloc) else float(ncloc)
+                si = 0.0 if pd.isna(sqale_index) else float(sqale_index)
+                if nl == 0:
+                    fqs = float(pass_val)
+                else:
+                    fqs = compute_fqs(float(pass_val), si, nl)
 
             rows.append({
                 "model": model,
@@ -119,8 +117,8 @@ def main() -> None:
                 "file": filename,
                 "base_task": base_task,
                 "status": status,
-                "ncloc": ncloc,
-                "sqale_index": sqale_index,
+                "ncloc": 0.0 if pd.isna(ncloc) else float(ncloc),
+                "sqale_index": 0.0 if pd.isna(sqale_index) else float(sqale_index),
                 "cognitive_complexity": cognitive_complexity,
                 "complexity": complexity,
                 "code_smells": code_smells,
