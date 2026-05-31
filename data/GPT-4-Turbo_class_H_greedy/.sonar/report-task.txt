@@ -1,0 +1,6 @@
+projectKey=GPT-4-Turbo_class_H_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=GPT-4-Turbo_class_H_greedy
+ceTaskId=9d6dc8b9-dd37-435e-b2e8-be7340dd2fda
+ceTaskUrl=http://localhost:9000/api/ce/task?id=9d6dc8b9-dd37-435e-b2e8-be7340dd2fda

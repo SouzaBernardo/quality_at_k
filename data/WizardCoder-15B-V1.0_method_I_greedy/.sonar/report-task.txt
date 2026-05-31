@@ -1,0 +1,6 @@
+projectKey=WizardCoder-15B-V1.0_method_I_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=WizardCoder-15B-V1.0_method_I_greedy
+ceTaskId=c22f2240-d7d6-4780-8f4d-f12df2e36eb2
+ceTaskUrl=http://localhost:9000/api/ce/task?id=c22f2240-d7d6-4780-8f4d-f12df2e36eb2

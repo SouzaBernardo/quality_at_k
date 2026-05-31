@@ -1,0 +1,6 @@
+projectKey=PolyCoder-2.7B_class_H_greedy
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=PolyCoder-2.7B_class_H_greedy
+ceTaskId=cb3a31d1-eee5-4ce3-be63-9db17dcbecef
+ceTaskUrl=http://localhost:9000/api/ce/task?id=cb3a31d1-eee5-4ce3-be63-9db17dcbecef

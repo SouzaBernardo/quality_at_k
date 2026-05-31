@@ -1,0 +1,6 @@
+projectKey=incoder_100_m_dire
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=incoder_100_m_dire
+ceTaskId=76392d7f-7b7b-4e4d-9ca7-c347929b98fc
+ceTaskUrl=http://localhost:9000/api/ce/task?id=76392d7f-7b7b-4e4d-9ca7-c347929b98fc

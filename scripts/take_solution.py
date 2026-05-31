@@ -1,3 +1,4 @@
+import csv
 import os
 import json
 import re
@@ -217,31 +218,9 @@ def _is_greedy_v0(file_name: str) -> bool:
     return '_t0' in name
 
 
-STATUS_MAP = {
-    'class_success': 'Success',
-    'class_partial_success': 'PartialSuccess',
-    'class_fail': 'Fail',
-}
-
-def get_predict_status(detailed_results: dict, model_key: str, task_id: str, predict_idx: int) -> str:
-    se_key = task_id.replace('ClassEval_', 'SE-Eval_')
-    se_data = detailed_results.get(model_key, {}).get(se_key, {})
-
-    if not se_data:
-        return 'Unknown'
-
-    for test_key, test_data in se_data.items():
-        if test_key == 'TestClass':
-            continue
-        each_result = test_data.get('EachTestResult', [])
-        if predict_idx < len(each_result) and each_result[predict_idx] == 'error':
-            return 'Error'
-
-    class_results = se_data.get('TestClass', {}).get('ClassEachTestResult', [])
-    if predict_idx < len(class_results):
-        return STATUS_MAP.get(class_results[predict_idx], 'Unknown')
-
-    return 'Unknown'
+def get_predict_status(csv_results: dict, model_key: str, class_name: str) -> str:
+    csv_model = model_key.replace('(greedy)', '').strip()
+    return csv_results.get((csv_model, class_name), 'Unknown')
 
 
 def process_predict_item(class_name: str, class_name_idx: str, file_name: str, predictContent: str):
@@ -264,9 +243,11 @@ def save_file(content: str, content_path: pathlib.Path, file_name: str):
         f.write(content)
 
 def main():
-    detailed_result_path = PROJECT_ROOT / "output" / "result" / "detailed_result.json"
-    with open(detailed_result_path, "r", encoding="utf-8") as f:
-        detailed_results = json.load(f)
+    csv_path = PROJECT_ROOT / "classeval_quality" / "pass_at_1_greedy_per_task.csv"
+    csv_results = {}
+    with open(csv_path, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            csv_results[(row['model'], row['task'])] = row['status']
 
     input_dir = PROJECT_ROOT / "output" / "model_output_v1.0.0"
     for file_name in os.listdir(input_dir):
@@ -286,11 +267,10 @@ def main():
 
         for item in data:
             class_name = item.get("class_name", "UnknownClass")
-            task_id = item.get("task_id", "")
 
             predictArrayContent = item.get("predict", [])
-            for i, predict_item in enumerate(predictArrayContent):
-                status = get_predict_status(detailed_results, model_key, task_id, i)
+            for predict_item in predictArrayContent:
+                status = get_predict_status(csv_results, model_key, class_name)
                 class_name_idx = f"{class_name}{status}"
                 process_predict_item(class_name, class_name_idx, file_name, predict_item)
 
@@ -317,12 +297,20 @@ def main():
 
         for item in data:
             class_name = item.get("class_name", "UnknownClass")
-            task_id = item.get("task_id", "")
 
-            for i, predict_item in enumerate(item.get("predict", [])):
-                status = get_predict_status(detailed_results, model_key, task_id, i)
+            predict_list = item.get("predict", [])
+            if '_m_iter' in file_name:
+                if not predict_list:
+                    continue
+                predict_item = predict_list[-1]
+                status = get_predict_status(csv_results, model_key, class_name)
                 class_name_idx = f"{class_name}{status}"
                 process_predict_item(class_name, class_name_idx, file_name, predict_item)
+            else:
+                for predict_item in predict_list:
+                    status = get_predict_status(csv_results, model_key, class_name)
+                    class_name_idx = f"{class_name}{status}"
+                    process_predict_item(class_name, class_name_idx, file_name, predict_item)
 
 if __name__ == "__main__":
     main()

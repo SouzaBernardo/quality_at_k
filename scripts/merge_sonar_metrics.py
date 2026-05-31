@@ -2,12 +2,13 @@ import pathlib
 import re
 
 from compute_fqs import compute_fqs
+from sort_csv import sort_df
 
 import pandas as pd
 
 ROOT = pathlib.Path(__file__).parent.parent
-SONAR_DIR = ROOT / "sonar-metrics"
-PASS_AT_K_CSV = SONAR_DIR / "pass_at_greedy_value.csv"
+SONAR_DIR = ROOT / "sonar-metrics" / "new"
+PASS_AT_K_CSV = SONAR_DIR / "pass_at_1_greedy_per_task.csv"
 OUTPUT_CSV = SONAR_DIR / "combined_sonar_metrics.csv"
 
 MODEL_KEY_MAP = {
@@ -24,8 +25,6 @@ MODEL_KEY_MAP = {
     "starcoder-instruct-15B": "Instruct-StarCoder",
     "GroundTruth": None,
 }
-
-STRATEGY_ORDER = {"H": 0, "C": 1, "I": 2, "N/A": 3}
 
 # Matches the strategy/sampling suffix from the middle of the filename
 _STRATEGY_PATTERNS = [
@@ -99,6 +98,9 @@ def main() -> None:
             complexity = row.get("complexity")
             code_smells = row.get("code_smells")
 
+            complexity = 0.0 if pd.isna(complexity) else float(complexity)
+            code_smells = 0.0 if pd.isna(code_smells) else float(code_smells)
+
             if status == "N/A" or pass_val is None:
                 fqs = None
             elif status != "Success":
@@ -130,14 +132,7 @@ def main() -> None:
 
     combined = pd.concat(frames, ignore_index=True)
 
-    combined["_strategy_order"] = combined["strategy"].map(STRATEGY_ORDER).fillna(99)
-    combined.sort_values(
-        by=["model", "_strategy_order", "file"],
-        key=lambda col: col.str.lower() if col.dtype == object else col,
-        inplace=True,
-        ignore_index=True,
-    )
-    combined.drop(columns=["_strategy_order"], inplace=True)
+    combined = sort_df(combined)
 
     combined.to_csv(OUTPUT_CSV, index=False)
     print(f"Wrote {len(combined)} rows to {OUTPUT_CSV}")

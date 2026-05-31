@@ -16,7 +16,7 @@ import pathlib
 import pandas as pd
 
 ROOT = pathlib.Path(__file__).parent.parent
-SONAR_DIR = ROOT / "sonar-metrics"
+SONAR_DIR = ROOT / "sonar-metrics" / "new"
 INPUT_CSV  = SONAR_DIR / "combined_sonar_metrics.csv"
 OUTPUT_CSV = SONAR_DIR / "fqs_aggregated.csv"
 

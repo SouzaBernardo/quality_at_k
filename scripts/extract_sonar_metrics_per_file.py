@@ -21,7 +21,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 project_key = sys.argv[1]
-output_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "..")
+output_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "..", "sonar-metrics", "new", "raw")
 os.makedirs(output_dir, exist_ok=True)
 output_path = os.path.join(output_dir, f"sonar_metrics_{project_key}_files.csv")
 
