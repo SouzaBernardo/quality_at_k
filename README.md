@@ -62,6 +62,41 @@ O SonarQube estará disponível em [http://localhost:9000](http://localhost:9000
 
 > Na primeira inicialização, o SonarQube pode levar alguns minutos para reconstruir o índice de busca interno a partir do banco de dados. Aguarde até a interface estar totalmente disponível.
 
+## Pipeline de Quality@1
+
+### Fórmula
+
+```
+Quality@1(t) = Pass@1(t) × (1 − min(1, β × SQALE_Index(t) / NCLOC(t)))
+```
+
+Onde `Pass@1(t) ∈ {0, 1}`, `β = 0.1`, `SQALE_Index` é a dívida técnica em minutos (SonarQube) e `NCLOC` é o número de linhas de código não comentadas.
+
+### Como executar
+
+Com Python 3 e pandas instalados:
+
+```bash
+python3 scripts/run_pipeline.py
+```
+
+Etapas executadas automaticamente:
+
+| Passo | Script | Descrição |
+|-------|--------|-----------|
+| 1 | `merge_sonar_metrics.py` | Lê os CSVs brutos do SonarQube + `pass_at_greedy_value.csv`, calcula FQS por tarefa |
+| 2 | `prioritize_duplicates.py` | Remove duplicatas mantendo o status de maior prioridade (Success > PartialSuccess > Fail > Error > Unknown) |
+| 3 | `aggregate_fqs.py` | Calcula a média de FQS por (modelo, estratégia) |
+
+### Outputs
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `sonar-metrics/combined_sonar_metrics.csv` | 3.400 linhas — métricas SonarQube + FQS por tarefa |
+| `sonar-metrics/fqs_aggregated.csv` | 34 linhas — FQS médio por modelo/estratégia, ordenado do maior para o menor |
+
+---
+
 ## Reanalisando os projetos
 
 Caso os arquivos em `data/` sejam alterados ou você queira reprocessar as análises do zero:
@@ -129,21 +164,33 @@ data/
 
 ```
 .
-├── compose.yaml               # Sobe o SonarQube com a imagem pré-populada
-├── run_sonar.sh               # Reenvia todos os projetos ao SonarQube
-├── sonar-project.properties   # Configuração base dos projetos Sonar
-├── classEval_output/          # Saída intermediária do take_solution.py
-└── data/                      # Entrada do SonarQube (saída do group_filtered_solutions.py)
+├── compose.yaml                    # Sobe o SonarQube com a imagem pré-populada
+├── run_sonar.sh                    # Reenvia todos os projetos ao SonarQube
+├── sonar-project.properties        # Configuração base dos projetos Sonar
+│
+├── scripts/
+│   ├── run_pipeline.py             # Executa o pipeline completo de Quality@1
+│   ├── merge_sonar_metrics.py      # Passo 1: consolida métricas + calcula FQS
+│   ├── prioritize_duplicates.py    # Passo 2: remove duplicatas por prioridade
+│   ├── aggregate_fqs.py            # Passo 3: agrega FQS por modelo/estratégia
+│   ├── compute_fqs.py              # Função pura da fórmula Quality@1
+│   ├── take_solution.py            # Extrai soluções dos JSONs do ClassEval
+│   ├── group_filtered_solutions.py # Reorganiza para o formato do SonarQube
+│   └── extract_sonar_metrics*.py   # Extração de métricas via API do SonarQube
+│
+├── sonar-metrics/
+│   ├── combined_sonar_metrics.csv  # Saída principal: 3.400 linhas (34 grupos × 100 tarefas)
+│   ├── fqs_aggregated.csv          # Resultado agregado: FQS médio por modelo/estratégia
+│   ├── pass_at_greedy_value.csv    # Input: mapeamento (modelo, tarefa) → pass@1 binário
+│   └── raw/                        # CSVs brutos do SonarQube (1 por modelo/estratégia)
+│       └── sonar_metrics_*_files.csv
+│
+├── classeval_output/               # Saída intermediária do take_solution.py
+└── data/                           # Entrada do SonarQube (saída do group_filtered_solutions.py)
     ├── GPT-4-Turbo_class_H_greedy/
-    ├── GPT-4-Turbo_method_C_greedy/
-    ├── GPT-4-Turbo_method_I_greedy/
     ├── PolyCoder-2.7B_class_H_greedy/
-    ├── PolyCoder-2.7B_class_H_t0.2/
-    ├── PolyCoder-2.7B_method_C_greedy/
-    ├── PolyCoder-2.7B_method_C_t0.2/
-    ├── PolyCoder-2.7B_method_I_greedy/
-    ├── PolyCoder-2.7B_method_I_t0.2/
-    └── groundTruth/
+    ├── groundTruth/
+    └── ...
 ```
 
 ## Reconstruindo a imagem Docker
@@ -156,12 +203,12 @@ docker compose up -d
 ./run_sonar.sh
 
 # 2. Extraia os dados do container em execução
-docker cp <container_id>:/opt/sonarqube/data ./sonarqube-data
-docker cp <container_id>:/opt/sonarqube/extensions ./sonarqube-extensions
+docker cp <container_id>:/opt/sonarqube/data ./sonar-data/sonarqube-data
+docker cp <container_id>:/opt/sonarqube/extensions ./sonar-data/sonarqube-extensions
 
 # 3. Reconstrua e publique
 docker build -t beposs/class_eval_sonar:latest .
 docker push beposs/class_eval_sonar:latest
 ```
 
-> As pastas `sonarqube-data/` e `sonarqube-extensions/` estão no `.gitignore` — são geradas localmente apenas durante o build da imagem.
+> A pasta `sonar-data/` está no `.gitignore` — é gerada localmente apenas durante o build da imagem.

@@ -68,7 +68,7 @@ def main() -> None:
         for _, r in pass_df.iterrows()
     }
 
-    csv_files = sorted(SONAR_DIR.glob("sonar_metrics_*_files.csv"))
+    csv_files = sorted((SONAR_DIR / "raw").glob("sonar_metrics_*_files.csv"))
     if not csv_files:
         raise FileNotFoundError(f"No per-file CSVs found in {SONAR_DIR}")
 

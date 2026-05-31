@@ -156,12 +156,12 @@ docker compose up -d
 ./run_sonar.sh
 
 # 2. Extract data from the running container
-docker cp <container_id>:/opt/sonarqube/data ./sonarqube-data
-docker cp <container_id>:/opt/sonarqube/extensions ./sonarqube-extensions
+docker cp <container_id>:/opt/sonarqube/data ./sonar-data/sonarqube-data
+docker cp <container_id>:/opt/sonarqube/extensions ./sonar-data/sonarqube-extensions
 
 # 3. Rebuild and publish
 docker build -t beposs/class_eval_sonar:latest .
 docker push beposs/class_eval_sonar:latest
 ```
 
-> The `sonarqube-data/` and `sonarqube-extensions/` folders are listed in `.gitignore` — they are generated locally only during the image build.
+> The `sonar-data/` folder is listed in `.gitignore` — it is generated locally only during the image build.
