@@ -30,3 +30,46 @@ class WeatherSystem:
         self.temperature = weather_list[self.city]['temperature']
         self.weather = weather_list[self.city]['weather']
         return self.temperature, self.weather
+
+    def set_city(self, city):
+        """
+        Set the city of the weather system.
+        :param city: the city to set, str.
+        :return: None
+        >>> weatherSystem = WeatherSystem('New York')
+        >>> weatherSystem.set_city('Beijing')
+        >>> weatherSystem.city
+        'Beijing'
+
+        """
+        weather_list[self.city]['temperature'] = int(weather_list[self.city]['temperature'])
+        weather_list[self.city]['temperature units'] = tmp_units
+        self.temperature = weather_list[self.city]['temperature']
+        self.weather = weather_list[self.city]['weather']
+        return self.temperature, self.weather
+
+    def celsius_to_fahrenheit(self):
+        """
+        Convert the temperature from Celsius to Fahrenheit.
+        :return: the temperature in Fahrenheit, float.
+        >>> weatherSystem = WeatherSystem('New York')
+        >>> weatherSystem.temperature = 27
+        >>> weatherSystem.celsius_to_fahrenheit()
+        80.6
+
+        """
+        fahrenheit = self.temperature * 1.8 + 32
+        return fahrenheit
+
+    def fahrenheit_to_celsius(self):
+        """
+        Convert the temperature from Fahrenheit to Celsius.
+        :return: the temperature in Celsius, float.
+        >>> weatherSystem = WeatherSystem('New York')
+        >>> weatherSystem.temperature = 80.6
+        >>> weatherSystem.fahrenheit_to_celsius()
+        26.999999999999996
+
+        """
+        celsius = self.temperature - 32
+        return celsius

@@ -230,3 +230,25 @@ class Lemmatization:
         sentence = sentence.replace('<', ' ')
         sentence = sentence.replace('>', ' ')
         return sentence
+
+    def get_pos_tag(self, sentence):
+        """
+        Remove punctuations of the sentence and tokenizes the input sentence, mark the part of speech tag of each word.
+        :param sentence: a sentence str
+        :return: list, part of speech tag of each word in the sentence.
+        >>> lemmatization = Lemmatization()
+        >>> lemmatization.get_pos_tag("I am running in a race.")
+        ['PRP', 'VBP', 'VBG', 'IN', 'DT', 'NN']
+        """
+        
+
+
+    def remove_punctuation(self, sentence):
+        """
+        Removes punctuation from the input text.
+        :param sentence: a sentence str
+        :return: str, sentence without any punctuation
+        >>> lemmatization = Lemmatization()
+        >>> lemmatization.remove_punctuation("I am running in a race.")
+        'I am running in a race'
+        """

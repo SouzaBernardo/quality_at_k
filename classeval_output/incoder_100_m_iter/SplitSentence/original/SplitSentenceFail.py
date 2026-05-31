@@ -16,3 +16,26 @@ class SplitSentence:
         """
         sentences = re.split(r'[\.\?]+\s*', sentences_string)
         return sentences
+
+    def count_words(self, sentence):
+        """
+        Count the number of words in a sentence. Note that words are separated by spaces and that punctuation marks and numbers are not counted as words.
+        :param sentence:string, sentence to be counted, where words are separated by spaces
+        :return:int, number of words in the sentence
+        >>> ss.count_words("abc def")
+        2
+        """
+        words = re.split(r'\s+', sentence)
+        return len(words)
+
+    def process_text_file(self, sentences_string):
+        """
+        Given a text, return the number of words in the longest sentence
+        :param sentences_string: string, undivided long sentence
+        :return:int, the number of words in the longest sentence
+        >>> ss.process_text_file("aaa aaaa. bb bbbb bbb? cccc ccccccc cc ccc. dd ddd?")
+        4
+        """
+        sentences = self.split_sentences(sentences_string)
+        longest_sentence = max(sentences, key=len)
+        return self.count_words(longest_sentence)

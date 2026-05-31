@@ -27,3 +27,33 @@ class CookiesUtil:
         self.cookies = cookies
         with open(self.cookies_file, 'w') as cookies_file:
             json.dump(cookies, cookies_file)
+
+
+    def load_cookies(self):
+        """
+        Loads the cookies from the cookies_file to the cookies data.
+        :return: The cookies data, dict.
+        >>> cookies_util = CookiesUtil('cookies.json')
+        >>> cookies_util.load_cookies()
+        {'key1': 'value1', 'key2': 'value2'}
+
+        """
+        cookies_file = open(self.cookies_file, 'r')
+        self.cookies = json.load(cookies_file)
+        cookies_file.close()
+        return self.cookies
+
+    def _save_cookies(self):
+        """
+        Saves the cookies to the cookies_file, and returns True if successful, False otherwise.
+        :return: True if successful, False otherwise.
+        >>> cookies_util = CookiesUtil('cookies.json')
+        >>> cookies_util.cookies = {'key1': 'value1', 'key2': 'value2'}
+        >>> cookies_util._save_cookies()
+        True
+
+        """
+        cookies_file = open(self.cookies_file, 'w')
+        json.dump(self.cookies, cookies_file)
+        cookies_file.close()
+        return True

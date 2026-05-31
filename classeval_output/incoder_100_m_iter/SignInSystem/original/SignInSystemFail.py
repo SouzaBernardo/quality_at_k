@@ -29,3 +29,78 @@ class SignInSystem:
         else:
             return False
 
+
+    def sign_in(self, username):
+        """
+        Sign in a user if the user was in the self.users and change the state to True.
+        :param username: str, the username to be signed in.
+        :return: bool, True if the user is signed in successfully, False if the user does not exist.
+        >>> signInSystem.sign_in("mike")
+        True
+        >>> signInSystem.sign_in("mik")
+        False
+        """
+        
+        if username in self.users:
+            self.users[username] = True
+            return True
+        else:
+            return False
+
+
+    def check_sign_in(self, username):
+        """
+        Check if a user is signed in.
+        :param username: str, the username to be checked.
+        :return: bool, True if the user is signed in, False if the user does not exist or is not signed in.
+        >>> signInSystem.check_sign_in("jack")
+        False
+        >>> signInSystem.add_user("jack")
+        >>> signInSystem.check_sign_in("jack")
+        >>> signInSystem.sign_in("jack")
+        >>> signInSystem.check_sign_in("jack")
+        True
+        """
+        
+        if username in self.users:
+            return self.users[username]
+        else:
+            return False
+
+
+    def all_signed_in(self):
+        """
+        Check if all users are signed in.
+        :return: bool, True if all users are signed in, False otherwise.
+        >>> signInSystem.add_user("jack")
+        True
+        >>> signInSystem.sign_in("jack")
+        >>> signInSystem.all_signed_in()
+        True
+        """
+        
+        for user in self.users:
+            if self.users[user]:
+                return True
+        return False
+
+
+    def all_not_signed_in(self):
+        """
+        Get a list of usernames that are not signed in.
+        :return: list[str], a list of usernames that are not signed in.
+        >>> signInSystem = SignInSystem()
+        >>> signInSystem.add_user("a")
+        True
+        >>> signInSystem.add_user("b")
+        True
+        >>> signInSystem.all_not_signed_in()
+        ['a', 'b']
+        """
+        
+        not_signed_in = []
+        for user in self.users:
+            if not self.users[user]:
+                not_signed_in.append(user)
+        return not_signed_in
+

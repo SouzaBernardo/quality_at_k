@@ -41,3 +41,44 @@ class Snake:
         else:
             self.positions.append((self.positions[-1][0] + self.BLOCK_SIZE, self.positions[-1][1] + self.BLOCK_SIZE))
             self.length += 1
+
+    def random_food_position(self):
+        """
+        Randomly generate a new food position, but don't place it on the snake.
+        :return: None, Change the food position
+        """
+        
+        self.food_position = (random.randint(0, self.SCREEN_WIDTH), random.randint(0, self.SCREEN_HEIGHT))
+
+    def reset(self):
+        """
+        Reset the snake to its initial state. Set the length to 1, the snake head position to ((SCREEN_WIDTH/2), (SCREEN_HEIGHT/2)), the score to 0, and randomly generate new food position.
+        :return: None
+        >>> snake = Snake(100, 100, 1, (51, 51))
+        >>> snake.reset()
+        self.length = 1
+        self.positions = [(50, 50)]
+        self.score = 0
+        self.random_food_position()
+        """
+        
+        self.length = 1
+        self.positions = [((SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2))]
+        self.score = 0
+        self.random_food_position()
+
+    def eat_food(self):
+        """
+        Increase the length of the snake by 1 and increase the score by 100. Randomly generate a new food position, but
+        don't place it on the snake.
+        :return: None
+        >>> snake = Snake(100, 100, 1, (51, 51))
+        >>> snake.move((1,1))
+        >>> snake.eat_food()
+        self.length = 2
+        self.score = 10
+        """
+        
+        self.length += 1
+        self.score += 100
+        self.random_food_position()

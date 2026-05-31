@@ -36,3 +36,48 @@ class BlackjackGame:
                 cards.append(rank + suit)
         return cards
 
+
+    def calculate_hand_value(self, hand):
+        """
+        Calculate the value of the poker cards stored in hand list according to the rules of the Blackjack Game.
+        If the card is a digit, its value is added to the total hand value.
+        Value of J, Q, or K is 10, while Aces are worth 11.
+        If the total hand value exceeds 21 and there are Aces present, one Ace is treated as having a value of 1 instead of 11,
+        until the hand value is less than or equal to 21, or all Aces have been counted as value of 1.
+        :param hand: list
+        :return: the value of the poker cards stored in hand list, a number.
+        >>> black_jack_game.calculate_hand_value(['QD', '9D', 'JC', 'QH', 'AS'])
+        40
+        """
+        total = 0
+        for card in hand:
+            if card in 'JQK':
+                total += 10
+            elif card == 'A':
+                total += 11
+            else:
+                total += int(card)
+        return total
+
+
+    def check_winner(self, player_hand, dealer_hand):
+        """
+        Determines the winner of a game by comparing the hand values of the player and dealer.
+        rule:
+        If both players have hand values that are equal to or less than 21, the winner is the one whose hand value is closer to 21.
+        Otherwise, the winner is the one with the lower hand value.
+        :param player_hand: list
+        :param dealer_hand: list
+        :return: the result of the game, only two certain str: 'Dealer wins' or 'Player wins'
+        >>> black_jack_game.check_winner(['QD', '9D', 'JC', 'QH', 'AS'], ['QD', '9D', 'JC', 'QH', '2S'])
+        'Player wins'
+        """
+        player_hand_value = self.calculate_hand_value(player_hand)
+        dealer_hand_value = self.calculate_hand_value(dealer_hand)
+        if player_hand_value == dealer_hand_value:
+            return 'Dealer wins'
+        elif player_hand_value < dealer_hand_value:
+            return 'Player wins'
+        else:
+            return 'Dealer wins'
+

@@ -41,3 +41,66 @@ class RPGCharacter:
         else:
             print('{} has {} damage from {}!'.format(self.name, damage, other_character.name))
 
+
+    def heal(self):
+        """
+        Heal the character with 10 hp and the max hp is 100.
+        :return: int, the current health points after healing.
+        >>> player_1 = RPGCharacter('player 1', 93, 10, 3)
+        >>> player_1.heal()
+        100
+        """
+        heal_hp = self.hp + 10
+        if heal_hp > 100:
+            heal_hp = 100
+        self.hp = heal_hp
+        print('{} has healed {} hp!'.format(self.name, self.hp))
+        return self.hp
+
+
+    def gain_exp(self, amount):
+        """
+        Gain experience points for the character and level_up when the exp has reached the values that is 100 times the current level
+        The experience that overflows should be used to calculate the next leve up untill exhausts
+        :param amount: int, the amount of experience points to gain.
+        >>> player_1 = RPGCharacter('player 1', 100, 10, 3)
+        >>> player_1.gain_exp(1100)
+        >>> player_1.exp
+        100
+        >>> player_1.level
+        5
+        """
+        gain_exp = self.exp + amount
+        if gain_exp > 100:
+            gain_exp = 100
+        self.exp = gain_exp
+        print('{} has gained {} experience points from {}!'.format(self.name, self.exp, player_1.name))
+        return self.exp
+
+
+    def level_up(self):
+         """
+        Level up the character and return to zero experience points, increase hp by 20 points, attack power and defense points by 5 points.
+        max level is 100
+        :return: tuple[int, int, int, int], the new level, health points, attack power, and defense points after leveling up.
+        >>> player_1 = RPGCharacter('player 1', 100, 10, 3)
+        >>> player_1.level_up()
+        (2, 120, 15, 8)
+        """
+        level_up = self.level + 1
+        if level_up > 100:
+            level_up = 100
+        self.level = level_up
+        print('{} has leveled up to {}!'.format(self.name, self.level))
+        return self.level, self.hp, self.attack_power, self.defense
+
+    def is_alive(self):
+        """
+        Check if player is alive.
+        :return: True if the hp is larger than 0, or False otherwise.
+        >>> player_1 = RPGCharacter('player 1', 100, 10, 3)
+        >>> player_1.is_alive()
+        True
+        """
+        alive = self.hp > 0
+        return alive

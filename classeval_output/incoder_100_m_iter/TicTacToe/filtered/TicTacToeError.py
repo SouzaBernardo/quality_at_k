@@ -27,3 +27,38 @@ class TicTacToe:
         board[row][col] = self.current_player
         self.current_player = (self.current_player == 'X') else 'O'
         return board
+
+    def check_winner(self):
+        """
+        Check if there is a winner on the board in rows, columns and diagonals three directions
+        :return: str or None, the mark of the winner ('X' or 'O'), or None if there is no winner yet
+        >>> moves = [(1, 0), (2, 0), (1, 1), (2, 1), (1, 2)]
+        >>> for move in moves:
+        ...     ttt.make_move(move[0], move[1])
+        >>> ttt.check_winner()
+        'X'
+        """
+        board = self.board
+        winning_rows = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+        winning_cols = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+        winning_diags = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 4, 8], [2, 4, 6], [0, 4, 8], [2, 4, 6]]
+        for rows in winning_rows:
+            for cols in winning_cols:
+                for diags in winning_diags:
+                    if board[rows][cols] == board[diags][diags] and board[rows][cols] == board[diags][cols]:
+                        return board[rows][cols]
+        return None
+
+    def is_board_full(self):
+        """
+        Check if the game board is completely filled.
+        :return: bool, indicating whether the game board is full or not
+        >>> ttt.is_board_full()
+        False
+        """
+        board = self.board
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    return False
+        return True

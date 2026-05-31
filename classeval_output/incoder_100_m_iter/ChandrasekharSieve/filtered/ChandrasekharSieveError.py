@@ -52,3 +52,18 @@ class ChandrasekharSieve:
             for j in range(i*i, sieve[i], i):
                 sieve[j] = False
         return primes
+
+
+    def get_primes(self):
+        """
+        Get the list of generated prime numbers.
+        :return: list, a list of prime numbers
+        >>> cs = ChandrasekharSieve(20)
+        >>> cs.get_primes()
+        [2, 3, 5, 7, 11, 13, 17, 19]
+
+        """
+        primes = []
+        for p in self.primes:
+            primes.append(p)
+        return primes

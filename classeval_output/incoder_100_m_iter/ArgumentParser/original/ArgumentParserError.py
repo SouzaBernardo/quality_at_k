@@ -46,3 +46,60 @@ class ArgumentParser:
                 self.types[argument] = "string"
         return (True, missing_args)
 
+
+    def get_argument(self, key):
+        """
+        Retrieves the value of the specified argument from the arguments dictionary and returns it.
+        :param key: str, argument name
+        :return: The value of the argument, or None if the argument does not exist.
+        >>> parser.arguments
+        {'arg1': 'value1', 'arg2': 'value2', 'option1': True, 'option2': True}
+        >>> parser.get_argument('arg2')
+        'value2'
+        """
+        argument = self.arguments.get(key)
+        if argument is None:
+            return None
+        else:
+            return argument
+
+
+    def add_argument(self, arg, required=False, arg_type=str):
+        """
+        Adds an argument to self.types and self.required.
+        Check if it is a required argument and store the argument type.
+        If the argument is set as required, it wull be added to the required set.
+        The argument type and name are stored in the types dictionary as key-value pairs.
+        :param arg: str, argument name
+        :param required: bool, whether the argument is required, default is False
+        :param arg_type:str, Argument type, default is str
+        >>> parser.add_argument('arg1', True, 'int')
+        >>> parser.required
+        {'arg1'}
+        >>> parser.types
+        {'arg1': 'int'}
+        """
+        argument = arg
+        if required:
+            self.required.add(arg)
+        self.arguments[argument] = arg_type
+
+
+    def _convert_type(self, value):
+        """
+        Try to convert the type of input value by searching in self.types.
+        :param value: str, the input value in command line
+        :return: return corresponding value in self.types if convert successfully, or the input value oherwise
+        >>> parser.types
+        {'arg1': int}
+        >>> parser._convert_type('arg1', '21')
+        21
+        """
+        converted_value = None
+        for arg_type, arg_name in self.types.items():
+            try:
+                converted_value = eval(arg_name)(value)
+                break
+            except TypeError:
+                pass
+        return converted_value

@@ -24,3 +24,77 @@ class ClassRegistrationSystem:
             self.students.append(student)
             self.students_registration_classes[student['name']] = []
             return 0
+
+
+    def register_class(self, student_name, class_name):
+        """
+        register a class to the student.
+        :param student_name: str
+        :param class_name: str
+        :return a list of class names that the student has registered
+        >>> registration_system = ClassRegistrationSystem()
+        >>> registration_system.register_class(student_name="John", class_name="CS101")
+        >>> registration_system.register_class(student_name="John", class_name="CS102")
+        ["CS101", "CS102"]
+        
+        """
+        if student_name not in self.students_registration_classes:
+            return []
+        else:
+            self.students_registration_classes[student_name].append(class_name)
+            return self.students_registration_classes[student_name]
+
+
+    def get_students_by_major(self, major):
+        """
+        get all students in the major
+        :param major: str
+        :return a list of student name
+        >>> registration_system = ClassRegistrationSystem()
+        >>> student1 = {"name": "John", "major": "Computer Science"}
+        >>> registration_system.register_student(student1)
+        >>> registration_system.get_students_by_major("Computer Science")
+        ["John"]
+        """
+        
+        if major not in self.students_registration_classes:
+            return []
+        else:
+            return self.students_registration_classes[major]
+
+
+    def get_all_major(self):
+        """
+        get all majors in the system
+        :return a list of majors
+        >>> registration_system = ClassRegistrationSystem()
+        >>> registration_system.students = [{"name": "John", "major": "Computer Science"}],
+        >>> registration_system.get_all_major(student1)
+        ["Computer Science"]
+        """
+        
+        return self.students_registration_classes.keys()
+
+
+    def get_most_popular_class_in_major(self, major):
+        """
+        get the class with the highest enrollment in the major.
+        :return  a string of the most popular class in this major
+        >>> registration_system = ClassRegistrationSystem()
+        >>> registration_system.students = [{"name": "John", "major": "Computer Science"},
+                                             {"name": "Bob", "major": "Computer Science"},
+                                             {"name": "Alice", "major": "Computer Science"}]
+        >>> registration_system.students_registration_classes = {"John": ["Algorithms", "Data Structures"],
+                                            "Bob": ["Operating Systems", "Data Structures", "Algorithms"]}
+        >>> registration_system.get_most_popular_class_in_major("Computer Science")
+        "Data Structures"
+        """
+        
+        if major not in self.students_registration_classes:
+            return []
+        else:
+            class_list = []
+            for class_name in self.students_registration_classes[major]:
+                class_list.append(class_name)
+            class_list.sort()
+            return class_list[0]

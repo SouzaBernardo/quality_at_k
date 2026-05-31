@@ -25,3 +25,19 @@ class AvgPartition:
         div = size % self.limit
         return (size, div)
 
+
+    def get(self, index):
+        """
+        calculate the size of each block and the remainder of the division, and calculate the corresponding start and end positions based on the index of the partition.
+        :param index: the index of the partition,int.
+        :return: the corresponding block, list.
+        >>> a = AvgPartition([1, 2, 3, 4], 2)
+        >>> a.get(0)
+        [1, 2]
+
+        """
+        size, div = self.setNum()
+        start = index * div
+        end = start + div
+        return self.lst[start:end]
+

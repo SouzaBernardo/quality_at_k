@@ -27,3 +27,55 @@ class TextFileProcessor:
         with open(self.file_path, 'r') as file:
             data = json.load(file)
         return data
+
+
+    def read_file(self):
+        """
+        Read the return the content of self.file_path file.
+        :return: the same return as the read() method
+        >>> textFileProcessor = TextFileProcessor('test.json')
+        >>> textFileProcessor.read_file()
+        '{\n    "name": "test",\n    "age": 12\n}'
+        """
+        
+        with open(self.file_path, 'r') as file:
+            data = file.read()
+        return data
+
+
+    def write_file(self, content):
+        """
+        Write content into the self.file_path file, and overwrite if the file has already existed.
+        :param content: any content
+        >>> textFileProcessor = TextFileProcessor('test.json')
+        >>> textFileProcessor.write_file('Hello world!')
+        >>> textFileProcessor.read_file()
+        'Hello world!'
+        """
+        
+        with open(self.file_path, 'w') as file:
+            file.write(content)
+
+
+    def process_file(self):
+        """
+        Read the self.file_path file and filter out non-alphabetic characters from the content string.
+        Overwrite the after-processed data into the same self.file_path file.
+        >>> textFileProcessor = TextFileProcessor('test.json')
+        >>> textFileProcessor.read_file()
+        '{\n    "name": "test",\n    "age": 12\n}'
+        >>> textFileProcessor.process_file()
+        'nametestage'
+        """
+        
+        with open(self.file_path, 'r') as file:
+            data = file.read()
+        
+        processed_data = ""
+        for char in data:
+            if char.isalpha():
+                processed_data += char
+            else:
+                pass
+        
+        self.write_file(processed_data)

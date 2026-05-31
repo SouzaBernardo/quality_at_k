@@ -26,3 +26,35 @@ class EncryptionUtils:
         for letter in plaintext:
             ciphertext += chr(ord(letter) + shift)
         return ciphertext
+
+
+    def vigenere_cipher(self, plaintext):
+        """
+        Encrypts the plaintext using the Vigenere cipher.
+        :param plaintext: The plaintext to encrypt, str.
+        :return: The ciphertext, str.
+        >>> e = EncryptionUtils("key")
+        >>> e.vigenere_cipher("abc")
+        'kfa'
+
+        """
+        ciphertext = ''
+        for letter in plaintext:
+            ciphertext += chr(ord(letter) + ord(self.key[letter]))
+        return ciphertext
+
+
+    def rail_fence_cipher(self,plain_text, rails):
+        """
+        Encrypts the plaintext using the Rail Fence cipher.
+        :param plaintext: The plaintext to encrypt, str.
+        :return: The ciphertext, str.
+        >>> e = EncryptionUtils("key")
+        >>> e.rail_fence_cipher("abc", 2)
+        'acb'
+
+        """
+        ciphertext = ''
+        for letter in plain_text:
+            ciphertext += chr(ord(letter) + rails)
+        return ciphertext

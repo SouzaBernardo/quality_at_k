@@ -25,3 +25,54 @@ class StudentDatabaseProcessor:
         connection.commit()
         connection.close()
 
+
+    def insert_student(self, student_data):
+        """
+        Inserts a new student into the "students" table.
+        :param student_data: dict, a dictionary containing the student's information (name, age, gender, grade).
+        :return: None
+        >>> processor = StudentDatabaseProcessor("students.db")
+        >>> processor.create_student_table()
+        >>> student_data = {'name': 'John', 'age': 15, 'gender': 'Male', 'grade': 9}
+        >>> processor.insert_student(student_data)
+        """
+        connection = sqlite3.connect(self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO students VALUES(?, ?, ?, ?, ?)", student_data)
+        connection.commit()
+        connection.close()
+
+
+    def search_student_by_name(self, name):
+        """
+        Searches for a student in the "students" table by their name.
+        :param name: str, the name of the student to search for.
+        :return: list of tuples, the rows from the "students" table that match the search criteria.
+        >>> processor = StudentDatabaseProcessor("students.db")
+        >>> processor.create_student_table()
+        >>> result = processor.search_student_by_name("John")
+        """
+        connection = sqlite3.connect(self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM students WHERE name=?", (name,))
+        rows = cursor.fetchall()
+        connection.close()
+        return rows
+
+
+    def delete_student_by_name(self, name):
+        """
+        Deletes a student from the "students" table by their name.
+        :param name: str, the name of the student to delete.
+        :return: None
+        >>> processor = StudentDatabaseProcessor("students.db")
+        >>> processor.create_student_table()
+        >>> student_data = {'name': 'John', 'age': 15, 'gender': 'Male', 'grade': 9}
+        >>> processor.insert_student(student_data)
+        >>> processor.delete_student_by_name("John")
+        """
+        connection = sqlite3.connect(self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM students WHERE name=?", (name,))
+        connection.commit()
+        connection.close()

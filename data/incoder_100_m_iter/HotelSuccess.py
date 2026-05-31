@@ -50,3 +50,64 @@ class Hotel:
             return 'Success!'
         else:
             return False
+
+
+    def check_in(self, room_type, room_number, name):
+        """
+        Check if the room of the specified type and number is booked by the person named name.
+        Remove this name when check in successfuly(room_number is equal to specific person's booked_rooms. When the actual check in quantity (room_number) is less than the booked quantity, number in booked_rooms will be booked quantity minus actual quantity
+        :param room_type: str, check in room type
+        :param room_number: int, check in room number
+        :param name: str, person name
+        :return False: only if the room_type is not in the booked_rooms or room_number is higher than quantity in booked rooms.
+        >>> hotel = Hotel('peace hotel', {'single': 5, 'double': 3})
+        >>> hotel.book_room('single', 1, 'guest 1')
+        'Success!'
+        >>> hotel.check_in('single', 2, 'guest 1')
+        False
+        >>> hotel.check_in('single', 1, 'guest 1')
+        >>> hotel.booked_rooms
+        {'single': {}}
+        """
+        booked_rooms = self.booked_rooms[room_type]
+        if room_number > booked_rooms[name]:
+            return False
+        else:
+            self.available_rooms[room_type] -= room_number
+            del self.booked_rooms[room_type][name]
+            return True
+
+
+    def check_out(self, room_type, room_number):
+        """
+        Check out rooms, add number for specific type in available_rooms.
+        If room_type is new, add new type in available_rooms.
+        :param room_type: str, check out room type
+        :param room_number: int, check out room number
+        >>> hotel = Hotel('peace hotel', {'single': 5, 'double': 3})
+        >>> hotel.check_out('single', 2)
+        >>> hotel.available_rooms
+        {'single': 7, 'double': 3}
+        >>> hotel.check_out('triple', 2)
+        >>> hotel.available_rooms
+        {'single': 7, 'double': 3, 'triple': 2}
+        """
+        available_rooms = self.available_rooms[room_type]
+        if available_rooms > 0:
+            self.available_rooms[room_type] += room_number
+        else:
+            self.available_rooms[room_type] = room_number
+        self.booked_rooms[room_type] = {}
+
+
+    def get_available_rooms(self, room_type):
+        """
+        Get the number of specific type of available rooms.
+        :param room_type: str, the room type that want to know
+        :return: int, the remaining number of this type rooms.
+        >>> hotel = Hotel('peace hotel', {'single': 5, 'double': 3})
+        >>> hotel.get_available_rooms('single')
+        5
+        """
+        available_rooms = self.available_rooms[room_type]
+        return available_rooms

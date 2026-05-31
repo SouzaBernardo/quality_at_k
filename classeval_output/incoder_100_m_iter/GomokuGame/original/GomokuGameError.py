@@ -38,3 +38,81 @@ class GomokuGame:
                 valid_move = True
         return valid_move
 
+
+    def check_winner(self):
+        """
+        Checks if there is a winner by looking for five in a row in all directions (horizontal, vertical, diagonal).
+        return: the symbol of the winning player (either 'X' or 'O') if there is a winner, or None otherwise.
+        >>> gomokuGame = GomokuGame(10)
+        >>> moves = [(5, 5), (0, 0), (5, 4), (0, 1), (5, 3), (0, 2), (5, 2), (0, 3), (5, 1)]
+        >>> for move in moves:
+        ...     gomokuGame.make_move(move[0], move[1])
+        >>> gomokuGame.check_winner()
+        'X'
+        """
+        winning_player = 'X'
+        winning_count = 0
+        horizontal_wins = 0
+        vertical_wins = 0
+        diagonal_wins = 0
+        for i in range(0, self.board_size):
+            for j in range(0, self.board_size):
+                if self.board[i][j] == ' ':
+                    winning_count += 1
+                    if winning_count == 5:
+                        winning_player = self.current_player
+                        winning_count = 0
+                        break
+                    if winning_player == 'X':
+                        if j == 0:
+                            horizontal_wins += 1
+                        elif j == self.board_size - 1:
+                            vertical_wins += 1
+                        elif i == 0:
+                            diagonal_wins += 1
+                        else:
+                            diagonal_wins += 1
+                        winning_player = 'O'
+                        break
+        return winning_player
+
+    def _check_five_in_a_row(self, row, col, direction):
+        """
+        checks if there are five consecutive symbols of the same player in a row starting from a given cell in a given direction (horizontal, vertical, diagonal).
+        Counts the number of consecutive symbols in that direction starting from the given cell,
+        :param row: int, row of the given cell
+        :param col: int, column of the given cell
+        :param direction: tuple, (int, int), named as (dx, dy). Row and col will plus several dx and dy repectively.
+        :return: True if there are five consecutive symbols of the same player, and False otherwise.
+        >>> gomokuGame = GomokuGame(10)
+        >>> moves = [(5, 5), (0, 0), (5, 4), (0, 1), (5, 3), (0, 2), (5, 2), (0, 3), (5, 1)]
+        >>> for move in moves:
+        ...     gomokuGame.make_move(move[0], move[1])
+        >>> gomokuGame._check_five_in_a_row(5, 1, (0, 1))
+        True
+        >>> gomokuGame._check_five_in_a_row(5, 1, (1, 1))
+        False
+        """
+        winning_player = self.current_player
+        winning_count = 0
+        winning_direction = direction
+        for i in range(0, self.board_size):
+            for j in range(0, self.board_size):
+                if self.board[i][j] == ' ':
+                    winning_count += 1
+                    if winning_count == 5:
+                        winning_player = self.current_player
+                        winning_count = 0
+                        break
+                    if winning_player == 'X':
+                        if j == 0:
+                            winning_direction = (direction[0], direction[1] + dx)
+                        elif j == self.board_size - 1:
+                            winning_direction = (direction[0], direction[1] - dx)
+                        elif i == 0:
+                            winning_direction = (direction[0] + dx, direction[1])
+                        else:
+                            winning_direction = (direction[0] - dx, direction[1])
+                        winning_player = 'O'
+                        break
+        return winning_player == winning_player

@@ -31,3 +31,42 @@ class DecryptionUtils:
                 plaintext += letter
         return plaintext
 
+
+    def vigenere_decipher(self, ciphertext):
+        """
+        Deciphers the given ciphertext using the Vigenere cipher
+        :param ciphertext: The ciphertext to decipher,str.
+        :return: The deciphered plaintext,str.
+        >>> d = DecryptionUtils('key')
+        >>> d.vigenere_decipher('ifmmp')
+        'ybocl'
+
+        """
+        plaintext = ""
+        for letter in ciphertext:
+            if letter in string.ascii_lowercase:
+                plaintext += chr(ord(letter) - ord(self.key))
+            else:
+                plaintext += letter
+        return plaintext
+
+
+    def rail_fence_decipher(self, encrypted_text, rails):
+        """
+        Deciphers the given ciphertext using the Rail Fence cipher
+        :param encrypted_text: The ciphertext to decipher,str.
+        :param rails: The number of rails to use for decryption,int.
+        :return: The deciphered plaintext,str.
+        >>> d = DecryptionUtils('key')
+        >>> d.rail_fence_decipher('Hoo!el,Wrdl l', 3)
+        'Hello, World!'
+
+        """
+        plaintext = ""
+        for letter in encrypted_text:
+            if letter in string.ascii_lowercase:
+                plaintext += chr(ord(letter) - rails)
+            else:
+                plaintext += letter
+        return plaintext
+

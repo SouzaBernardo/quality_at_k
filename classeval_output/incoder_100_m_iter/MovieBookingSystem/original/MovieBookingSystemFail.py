@@ -34,3 +34,45 @@ class MovieBookingSystem:
         """
         movie = {'name': name, 'price': price, 'start_time': start_time, 'end_time': end_time, 'seats': np.zeros((n,n))}
         self.movies.append(movie)
+
+    def book_ticket(self, name, seats_to_book):
+        """
+        Book tickets for a movie. Change the seats value in self.movies if book successfully.
+        :param name: str, movie name
+        :param seats_to_book: list of tuples, representing seats to book [(row1, col1), (row2, col2), ...]
+        :return: str, booking status message. "Movie not found." for no such movie.
+                "Booking success." for successfully booking, or "Booking failed." otherwise
+        >>> system.add_movie('Batman', 49.9, '17:05', '19:25', 3)
+        >>> system.book_ticket('Batman', [(0, 0), (0, 1)])
+        'Booking success.'
+        >>> system.book_ticket('Batman', [(0, 0)])
+        'Booking failed.'
+        >>> system.book_ticket('batman', [(0, 0)])
+        'Movie not found.'
+        """
+        movie_found = False
+        for movie in self.movies:
+            if movie['name'] == name:
+                movie_found = True
+                movie['seats'] = seats_to_book
+                break
+        if not movie_found:
+            return 'Movie not found.'
+        else:
+            return 'Booking success.'
+
+    def available_movies(self, start_time, end_time):
+        """
+        Get a list of available movies within the specified time range
+        :param start_time: str, start time in HH:MM format
+        :param end_time: str, end time in HH:MM format
+        :return: list of str, names of available movies
+        >>> system.add_movie('Batman', 49.9, '17:05', '19:25', 3)
+        >>> system.available_movies('12:00', '22:00')
+        ['Batman']
+        """
+        available_movies = []
+        for movie in self.movies:
+            if movie['start_time'] >= start_time and movie['start_time'] <= end_time:
+                available_movies.append(movie['name'])
+        return available_movies

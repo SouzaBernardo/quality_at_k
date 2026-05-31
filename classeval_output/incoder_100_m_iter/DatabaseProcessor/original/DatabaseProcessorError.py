@@ -25,3 +25,42 @@ class DatabaseProcessor:
         create_table_sql = "CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, {} TEXT, {} INTEGER)".format(table_name, key1, key2)
         self.cursor.execute(create_table_sql)
         self.connection.commit()
+
+    def insert_into_database(self, table_name, data):
+        """
+        Insert data into the specified table in the database.
+        :param table_name: str, the name of the table to insert data into.
+        :param data: list, a list of dictionaries where each dictionary represents a row of data.
+        >>> db.insert_into_database('user', [
+                {'name': 'John', 'age': 25},
+                {'name': 'Alice', 'age': 30}
+            ])
+        """
+        insert_into_database_sql = "INSERT INTO {} (id, name, age) VALUES (?, ?, ?)".format(table_name)
+        self.cursor.executemany(insert_into_database_sql, data)
+        self.connection.commit()
+
+    def search_database(self, table_name, name):
+        """
+        Search the specified table in the database for rows with a matching name.
+        :param table_name: str, the name of the table to search.
+        :param name: str, the name to search for.
+        :return: list, a list of tuples representing the rows with matching name, if any;
+                    otherwise, returns None.
+        >>> db.search_database('user', 'John')
+        [(1, 'John', 25)]
+        """
+        search_database_sql = "SELECT * FROM {} WHERE name = ?".format(table_name)
+        self.cursor.execute(search_database_sql, (name,))
+        return self.cursor.fetchall()
+
+    def delete_from_database(self, table_name, name):
+        """
+        Delete rows from the specified table in the database with a matching name.
+        :param table_name: str, the name of the table to delete rows from.
+        :param name: str, the name to match for deletion.
+        >>> db.delete_from_database('user', 'John')
+        """
+        delete_from_database_sql = "DELETE FROM {} WHERE name = ?".format(table_name)
+        self.cursor.execute(delete_from_database_sql, (name,))
+        self.connection.commit()

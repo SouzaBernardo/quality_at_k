@@ -27,3 +27,27 @@ class PersonRequest:
             return None
         
         return name
+
+    def _validate_sex(self, sex: str) -> str:
+        """
+        Validate the sex and return it. If sex is not Man, Woman, or UGM, set to None.
+        :param sex: str, the sex to validate
+        :return: str, the validated sex or None if invalid
+        """
+        
+        if sex not in ['Man', 'Woman', 'UGM']:
+            return None
+        
+        return sex
+
+    def _validate_phoneNumber(self, phoneNumber: str) -> str:
+        """
+        Validate the phone number and return it. If phoneNumber is empty or not an 11 digit number, set to None.
+        :param phoneNumber: str, the phone number to validate
+        :return: str, the validated phone number or None if invalid
+        """
+        
+        if len(phoneNumber) != 11 or not phoneNumber.isdigit():
+            return None
+        
+        return phoneNumber

@@ -32,3 +32,47 @@ class CurrencyConverter:
         rate = self.rates[from_currency]
         amount = self.rates[to_currency] * amount
         return amount
+
+    def get_supported_currencies(self):
+        """
+        Returns a list of supported currency types
+        :return:list, All supported currency types
+        >>> cc = CurrencyConverter()
+        >>> cc.get_supported_currencies()
+        ['USD','EUR','GBP','JPY','CAD','AUD','CNY']
+        """
+        rates = self.rates.keys()
+        rates.sort()
+        return rates
+
+    def add_currency_rate(self, currency, rate):
+        """
+        Add a new supported currency type, return False if the currency type is already in the support list
+        :param currency:string, currency type to be added
+        :param rate:float, exchange rate for this type of currency
+        :return:If successful, returns None; if unsuccessful, returns False
+        >>> cc = CurrencyConverter()
+        >>> cc.add_currency_rate('KRW', 1308.84)
+        self.rates['KRW'] = 1308.84
+        """
+        rates = self.rates.keys()
+        if currency in rates:
+            return False
+        self.rates[currency] = rate
+        return None
+
+    def update_currency_rate(self, currency, new_rate):
+        """
+        Update the exchange rate for a certain currency
+        :param currency:string
+        :param new_rate:float
+        :return:If successful, returns None; if unsuccessful, returns False
+        >>> cc = CurrencyConverter()
+        >>> cc.update_currency_rate('CNY', 7.18)
+        self.rates['CNY'] = 7.18
+        """
+        rates = self.rates.keys()
+        if currency not in rates:
+            return False
+        self.rates[currency] = new_rate
+        return None

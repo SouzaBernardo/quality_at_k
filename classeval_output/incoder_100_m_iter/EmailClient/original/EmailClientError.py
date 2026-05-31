@@ -36,3 +36,66 @@ class EmailClient:
             return False
         return True
 
+
+    def fetch(self):
+        """
+        Retrieves the first unread email in the email box and marks it as read.
+        :return: The first unread email in the email box, dict.
+        >>> sender = EmailClient('sender@example.com', 100)
+        >>> receiver = EmailClient('receiver@example.com', 50)
+        >>> receiver.inbox = [{'sender': 'sender@example.com', 'receiver': 'receiver@example.com', 'content': 'Hello', 'size': 10, 'time': '2023-07-13 11:36:40', 'state': 'unread'}]
+        >>> receiver.fetch()
+        {'sender': 'sender@example.com', 'receiver': 'receiver@example.com', 'content': 'Hello', 'size': 10, 'time': '2023-07-13 11:36:40', 'state': 'read'}
+
+        """
+        email = self.inbox.pop(0)
+        email['state'] = 'read'
+        return email
+
+    def is_full_with_one_more_email(self, size):
+        """
+        Determines whether the email box is full after adding an email of the given size.
+        :param size: The size of the email, float.
+        :return: True if the email box is full, False otherwise.
+        >>> sender = EmailClient('sender@example.com', 100)
+        >>> receiver = EmailClient('receiver@example.com', 50)
+        >>> receiver.is_full_with_one_more_email(10)
+        False
+
+        """
+        size = size + 10
+        if len(self.inbox) >= size:
+            return True
+        return False
+
+    def get_occupied_size(self):
+        """
+        Gets the total size of the emails in the email box.
+        :return: The total size of the emails in the email box, float.
+        >>> sender = EmailClient('sender@example.com', 100)
+        >>> receiver = EmailClient('receiver@example.com', 50)
+        >>> sender.inbox = [{'sender': 'sender@example.com', 'receiver': 'receiver@example.com', 'content': 'Hello', 'size': 10, 'time': datetime.now, 'state': 'unread'}]
+        >>> sender.get_occupied_size()
+        10
+
+        """
+        occupied = 0
+        for email in self.inbox:
+            occupied += email['size']
+        return occupied
+
+    def clear_inbox(self, size):
+        """
+        Clears the email box by deleting the oldest emails until the email box has enough space to accommodate the given size.
+        :param size: The size of the email, float.
+        >>> sender = EmailClient('sender@example.com', 100)
+        >>> receiver = EmailClient('receiver@example.com', 50)
+        >>> receiver.inbox = [{'size': 10},{'size': 20},{'size': 15}]
+        >>> receiver.clear_inbox(30)
+        >>> receiver.inbox
+        [{'size': 15}]
+
+        """
+        size = size + 10
+        while len(self.inbox) > size:
+            self.inbox.pop(0)

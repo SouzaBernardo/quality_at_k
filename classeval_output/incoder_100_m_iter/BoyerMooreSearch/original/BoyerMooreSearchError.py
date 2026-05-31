@@ -31,3 +31,43 @@ class BoyerMooreSearch:
             pos += 1
         return count
 
+
+    def mismatch_in_text(self, currentPos):
+        """
+        Determines the position of the first dismatch between the pattern and the text.
+        :param currentPos: The current position in the text, int.
+        :return: The position of the first dismatch between the pattern and the text, int,otherwise -1.
+        >>> boyerMooreSearch = BoyerMooreSearch("ABAABA", "ABC")
+        >>> boyerMooreSearch.mismatch_in_text(0)
+        2
+
+        """
+        count = 0
+        pos = 0
+        while pos < self.textLen and count != self.patLen:
+            count += 1
+            pos += 1
+            if pos == currentPos:
+                return count
+        return -1
+
+
+    def bad_character_heuristic(self):
+        """
+        Finds all occurrences of the pattern in the text.
+        :return: A list of all positions of the pattern in the text, list.
+        >>> boyerMooreSearch = BoyerMooreSearch("ABAABA", "AB")
+        >>> boyerMooreSearch.bad_character_heuristic()
+        [0, 3]
+
+        """
+        badChars = []
+        count = 0
+        pos = 0
+        while pos < self.textLen:
+            count += 1
+            pos += 1
+            if self.pattern[count] == self.text[pos]:
+                badChars.append(pos)
+        return badChars
+

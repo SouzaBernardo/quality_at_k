@@ -25,3 +25,29 @@ class UrlPath:
         segment = urllib.parse.quote(segment)
         self.segments.append(segment)
 
+
+    def parse(self, path, charset):
+        """
+        Parses a given path string and populates the list of segments in the UrlPath.
+        :param path: str, the path string to parse.
+        :param charset: str, the character encoding of the path string.
+        >>> url_path = UrlPath()
+        >>> url_path.parse('/foo/bar/', 'utf-8')
+
+        url_path.segments = ['foo', 'bar']
+        """
+
+
+    def fix_path(path):
+        """
+        Fixes the given path string by removing leading and trailing slashes.
+        :param path: str, the path string to fix.
+        :return: str, the fixed path string.
+        >>> url_path = UrlPath()
+        >>> url_path.fix_path('/foo/bar/')
+        'foo/bar'
+
+        """
+        fixed_path = path.strip('/')
+        return fixed_path
+

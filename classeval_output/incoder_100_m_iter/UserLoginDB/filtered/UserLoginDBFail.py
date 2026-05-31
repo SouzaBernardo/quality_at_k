@@ -26,3 +26,51 @@ class UserLoginDB:
         sql_command = "INSERT INTO users (username, password) VALUES (?, ?)"
         self.cursor.execute(sql_command, (username, password))
         self.connection.commit()
+
+
+    def search_user_by_username(self, username):
+        """
+        Searches for users in the "users" table by username.
+        :param username: str, the username of the user to search for.
+        :return:list of tuples, the rows from the "users" table that match the search criteria.
+        >>> user_db = UserLoginDB("user_database.db")
+        >>> user_db.create_table()
+        >>> user_db.insert_user('user1', 'pass1')
+        >>> result = user_db.search_user_by_username('user1')
+        len(result) = 1
+        """
+        sql_command = "SELECT * FROM users WHERE username = ?"
+        self.cursor.execute(sql_command, (username,))
+        return self.cursor.fetchall()
+
+
+    def delete_user_by_username(self, username):
+        """
+        Deletes a user from the "users" table by username.
+        :param username: str, the username of the user to delete.
+        :return: None
+        >>> user_db = UserLoginDB("user_database.db")
+        >>> user_db.create_table()
+        >>> user_db.insert_user('user1', 'pass1')
+        >>> user_db.delete_user_by_username('user1')
+        """
+        sql_command = "DELETE FROM users WHERE username = ?"
+        self.cursor.execute(sql_command, (username,))
+        self.connection.commit()
+
+
+    def validate_user_login(self, username, password):
+        """
+        Determine whether the user can log in, that is, the user is in the database and the password is correct
+        :param username:str, the username of the user to validate.
+        :param password:str, the password of the user to validate.
+        :return:bool, representing whether the user can log in correctly
+        >>> user_db = UserLoginDB("user_database.db")
+        >>> user_db.create_table()
+        >>> user_db.insert_user('user1', 'pass1')
+        >>> user_db.validate_user_login('user1', 'pass1')
+        True
+        """
+        sql_command = "SELECT * FROM users WHERE username = ? AND password = ?"
+        self.cursor.execute(sql_command, (username, password))
+        return self.cursor.fetchone() is not None

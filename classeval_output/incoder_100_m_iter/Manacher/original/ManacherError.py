@@ -32,3 +32,22 @@ class Manacher:
         else:
             return 1 + self.palindromic_length(center, diff, string)
 
+
+    def palindromic_string(self):
+        """
+        Finds the longest palindromic substring in the given string.
+        :return: The longest palindromic substring, str.
+        >>> manacher = Manacher('ababaxse')
+        >>> manacher.palindromic_string()
+        'ababa'
+
+        """
+        center = len(self.input_string) // 2
+        diff = 1
+        longest_palindromic_substring = ''
+        while diff < len(self.input_string):
+            longest_palindromic_substring = self.input_string[center:center + diff]
+            diff = self.palindromic_length(center, diff, self.input_string)
+            center = center + diff
+        return longest_palindromic_substring
+

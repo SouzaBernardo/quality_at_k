@@ -21,3 +21,53 @@ class BookManagement:
             self.inventory[title] = book
         else:
             self.inventory[title].quantity += quantity
+
+
+    def remove_book(self, title, quantity):
+        """
+        Remove one or several books from inventory which is sorted by book title.
+        Raise false while get invalid input.
+        :param title: str, the book title
+        :param quantity: int
+        """
+        book = self.inventory.get(title)
+        if book:
+            if book.quantity >= quantity:
+                book.quantity -= quantity
+            else:
+                return False
+        else:
+            return False
+        return True
+
+
+    def view_inventory(self):
+        """
+        Get the inventory of the Book Management.
+        :return self.inventory: dictionary, {title(str): quantity(int), ...}
+        >>> bookManagement = BookManagement()
+        >>> bookManagement.add_book("book1", 1)
+        >>> bookManagement.add_book("book2", 1)
+        >>> bookManagement.view_inventory()
+        {'book1': 1, 'book2': 1}
+        """
+        inventory = self.inventory.copy()
+        inventory.sort(key=lambda book: book.title())
+        return inventory
+
+
+    def view_book_quantity(self, title):
+        """
+        Get the quantity of a book.
+        :param title: str, the title of the book.
+        :return quantity: the quantity of this book title. return 0 when the title does not exist in self.invenroty
+        >>> bookManagement = BookManagement()
+        >>> bookManagement.add_book("book1", 1)
+        >>> bookManagement.view_book_quantity("book3")
+        0
+        """
+        book = self.inventory.get(title)
+        if book:
+            return book.quantity
+        else:
+            return 0

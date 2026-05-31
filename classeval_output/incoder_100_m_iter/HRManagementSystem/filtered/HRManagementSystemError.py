@@ -32,3 +32,79 @@ class HRManagementSystem:
         else:
             employees[employee_id] = {'id': employee_id, 'name': name, 'position': position, 'department': department, 'salary': salary}
             return True
+
+
+    def remove_employee(self, employee_id):
+        """
+        Remove an employee from the HRManagementSystem.
+        :param employee_id: The employee's id, int.
+        :return: If the employee is already in the HRManagementSystem, returns True, otherwise, returns False.
+        >>> hrManagementSystem = HRManagementSystem()
+        >>> hrManagementSystem.employees = {1: {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}}
+        >>> hrManagementSystem.remove_employee(1)
+        True
+        >>> hrManagementSystem.remove_employee(2)
+        False
+
+        """
+        employees = self.employees
+        if employee_id in employees:
+            del employees[employee_id]
+            return True
+        else:
+            return False
+
+
+    def update_employee(self, employee_id: int, employee_info: dict):
+        """
+        Update an employee's information in the HRManagementSystem.
+        :param employee_id: The employee's id, int.
+        :param employee_info: The employee's information, dict.
+        :return: If the employee is already in the HRManagementSystem, returns True, otherwise, returns False.
+        >>> hrManagementSystem = HRManagementSystem()
+        >>> hrManagementSystem.employees = {1: {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}}
+        >>> hrManagementSystem.update_employee(1, {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 20000})
+        True
+        >>> hrManagementSystem.update_employee(2, {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 20000})
+        False
+
+        """
+        employees = self.employees
+        if employee_id in employees:
+            employees[employee_id].update(employee_info)
+            return True
+        else:
+            return False
+
+
+    def get_employee(self, employee_id):
+        """
+        Get an employee's information from the HRManagementSystem.
+        :param employee_id: The employee's id, int.
+        :return: If the employee is already in the HRManagementSystem, returns the employee's information, otherwise, returns False.
+        >>> hrManagementSystem = HRManagementSystem()
+        >>> hrManagementSystem.employees = {1: {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}}
+        >>> hrManagementSystem.get_employee(1)
+        {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}
+        >>> hrManagementSystem.get_employee(2)
+        False
+
+        """
+        employees = self.employees
+        if employee_id in employees:
+            return employees[employee_id]
+        else:
+            return False
+
+
+    def list_employees(self):
+        “”“
+        :return: A list of all employees' information，dict.
+        >>> hrManagementSystem = HRManagementSystem()
+        >>> hrManagementSystem.employees = {1: {'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}}
+        >>> hrManagementSystem.list_employees()
+        {1: {'employee_ID': 1, 'name': 'John', 'position': 'Manager', 'department': 'Sales', 'salary': 100000}}
+
+        """
+        employees = self.employees
+        return employees
