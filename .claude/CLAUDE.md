@@ -21,10 +21,10 @@ Quality@1(t) = Pass@1(t) × (1 − min(1, β × SQALE_Index(t) / NCLOC(t)))
 - `fqs_aggregated.csv`: GroundTruth sempre na 1ª linha, resto em ordem decrescente de `fqs_mean`
 
 ## Arquivos-chave
-- `sonar-metrics/combined_sonar_metrics.csv` — 3.400 linhas (34 grupos × 100 tarefas)
-- `sonar-metrics/fqs_aggregated.csv`         — 34 linhas (1 por modelo/estratégia)
-- `sonar-metrics/pass_at_greedy_value.csv`   — mapeamento `(model_strategy, task) → pass@1`
-- `sonar-metrics/raw/`                       — 34 CSVs brutos do SonarQube (1 por modelo/estratégia)
+- `sonar-metrics/new/combined_sonar_metrics.csv` — 3.400 linhas (34 grupos × 100 tarefas)
+- `sonar-metrics/new/fqs_aggregated.csv`         — 34 linhas (1 por modelo/estratégia)
+- `sonar-metrics/new/pass_at_greedy_value.csv`   — mapeamento `(model_strategy, task) → pass@1`
+- `sonar-metrics/new/raw/`                       — 34 CSVs brutos do SonarQube (1 por modelo/estratégia)
 
 ## Modelos (11 modelos × 3 estratégias H/C/I + GroundTruth GT = 34 grupos)
 ChatGLM, codegeex2-6b, GPT-3.5-Turbo, GPT-4-Turbo, GroundTruth,
