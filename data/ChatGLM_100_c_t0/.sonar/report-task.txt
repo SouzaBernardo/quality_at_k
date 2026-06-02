@@ -2,5 +2,5 @@ projectKey=ChatGLM_100_c_t0
 serverUrl=http://localhost:9000
 serverVersion=26.4.0.121862
 dashboardUrl=http://localhost:9000/dashboard?id=ChatGLM_100_c_t0
-ceTaskId=211a696b-809c-451a-b493-ef6dbb0e59da
-ceTaskUrl=http://localhost:9000/api/ce/task?id=211a696b-809c-451a-b493-ef6dbb0e59da
+ceTaskId=64365d41-69fe-43e6-bdf1-5bcda374b54e
+ceTaskUrl=http://localhost:9000/api/ce/task?id=64365d41-69fe-43e6-bdf1-5bcda374b54e

@@ -98,6 +98,33 @@ Após o pipeline, são executados automaticamente os scripts de diagnóstico:
 | `check_pass_val.py` | Verifica se os `pass_val` no CSV combinado batem com o arquivo de pass@1 |
 | `find_duplicates.py` | Detecta tarefas duplicadas para o mesmo (modelo, estratégia) |
 
+```mermaid
+flowchart TD
+    A([main]) --> B
+
+    subgraph PIPELINE [PIPELINE — execução sequencial]
+        direction TB
+        B[run_sonar.sh\nroda SonarQube nos arquivos]
+        B --> C[extract_all_sonar_metrics_per_file.py]
+        C --> D[extract_sonar_metrics.py]
+        D --> E[merge_sonar_metrics.py\nune métricas + pass@1]
+        E --> F[aggregate_fqs.py\ncalcula Quality@1 por modelo/estratégia]
+    end
+
+    F --> G{returncode == 0?}
+    G -- Não --> STOP([sys.exit com código de erro])
+    G -- Sim --> H
+
+    subgraph CHECKS [CHECKS — validações]
+        direction TB
+        H[count_per_model_strategy.py]
+        H --> I[check_pass_val.py]
+        I --> J[find_duplicates.py]
+    end
+
+    J --> K([All done])
+```
+
 ### Outputs
 
 Todos os arquivos são gerados em `sonar-metrics/new/`:
@@ -140,6 +167,33 @@ classEval_output/          ← artefato intermediário (neste repositório)
 data/                      ← entrada do SonarQube
 ```
 
+### Pré-requisito — `scripts/generate_pass_at_1_greedy.py`
+
+Gera o arquivo `classeval_quality/pass_at_1_greedy_per_task.csv` que é consumido pelo `take_solution.py` para nomear cada solução com seu desfecho nos testes.
+
+```mermaid
+flowchart TD
+    A([início]) --> B[Lê ClassEval_data.json\n→ task_to_class\nSE-Eval_0..99 → class_name]
+    B --> C[Lê detailed_result.json\n→ data]
+    C --> D[Filtra chaves greedy\nexemplo: GPT-4_C greedy]
+    D --> E[Para cada model_key greedy]
+    E --> F[Para cada task SE-Eval_0..99]
+    F --> G[Obtém task_data do detailed_result]
+    G --> H[cal_pass_at_k\nn=1, k=1, k_success=class_success]
+    H --> I{ClassEachTestResult\nvazio?}
+    I -- Sim --> J[status = Unknown]
+    I -- Não --> K{algum método\ncom error?}
+    K -- Sim --> L[status = Error]
+    K -- Não --> M[STATUS_MAP\nclass_success / partial / fail]
+    J --> N[adiciona linha ao CSV]
+    L --> N
+    M --> N
+    N --> F
+    F --> E
+    E --> O[Escreve CSV\nclasseval_quality/pass_at_1_greedy_per_task.csv\nmodel · task · pass@1_value · status]
+    O --> P([fim])
+```
+
 ### Passo 1 — `scripts/take_solution.py`
 
 Lê os JSONs brutos em `output/model_output_v1.0.0/` do ClassEval, extrai o campo `predict` de cada geração e:
@@ -159,6 +213,53 @@ classEval_output/
         │   └── AccessGatewayFilterError.py   ← código sanitizado
         └── original/
             └── AccessGatewayFilterError.py   ← resposta bruta do modelo
+```
+
+```mermaid
+flowchart TD
+    A([main]) --> B[Lê pass_at_1_greedy_per_task.csv\n→ csv_results]
+
+    B --> C[Loop: model_output_v1.0.0/]
+    C --> D{contém 'greedy'?}
+    D -- Não --> C
+    D -- Sim --> E[get_model_key]
+    E --> F{modelo reconhecido?}
+    F -- Não --> C
+    F -- Sim --> G[Lê JSON]
+    G --> H[Para cada item/classe]
+    H --> I[Para cada predict]
+    I --> J[get_predict_status\n→ Success/Fail/...]
+    J --> K[process_predict_item]
+    K --> C
+
+    B --> L[Loop: model_output/\nChatGLM · Incoder · Vicuna]
+    L --> M{_is_greedy_v0?}
+    M -- Não --> L
+    M -- Sim --> N[get_model_key_v0]
+    N --> O{modelo reconhecido?}
+    O -- Não --> L
+    O -- Sim --> P[Lê JSON]
+    P --> Q{arquivo _m_iter?}
+    Q -- Sim --> R[pega só o último predict]
+    Q -- Não --> S[itera todos os predicts]
+    R --> T[process_predict_item]
+    S --> T
+    T --> L
+
+    K -.->|chama| PPI
+    T -.->|chama| PPI
+
+    subgraph PPI [process_predict_item]
+        direction TB
+        p1[salva conteúdo ORIGINAL]
+        p1 --> p2[remove_comments]
+        p2 --> p3[_extract_last_code_block\nformato WizardCoder]
+        p3 --> p4[regex replacements\nblocos markdown · FIM tokens · prose]
+        p4 --> p5[_strip_markdown_non_code_lines\nbullets · listas numeradas]
+        p5 --> p6[_strip_leading_prose]
+        p6 --> p7[_strip_trailing_prose]
+        p7 --> p8[salva conteúdo FILTRADO]
+    end
 ```
 
 ### Passo 2 — `scripts/group_filtered_solutions.py`

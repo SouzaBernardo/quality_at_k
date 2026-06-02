@@ -2,5 +2,5 @@ projectKey=santacoder-1.1B_method_C_greedy
 serverUrl=http://localhost:9000
 serverVersion=26.4.0.121862
 dashboardUrl=http://localhost:9000/dashboard?id=santacoder-1.1B_method_C_greedy
-ceTaskId=373a99e3-93cc-4426-96d5-e972453fe262
-ceTaskUrl=http://localhost:9000/api/ce/task?id=373a99e3-93cc-4426-96d5-e972453fe262
+ceTaskId=66a9bf4b-9d36-4d37-aeb8-c6fb2b87b94a
+ceTaskUrl=http://localhost:9000/api/ce/task?id=66a9bf4b-9d36-4d37-aeb8-c6fb2b87b94a
