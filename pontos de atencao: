@@ -1,0 +1,46 @@
+pontos de atencao: 
+
+classes identificadas com erro na sanitização:
+
+Wizard: 
+MahjongConnect, MetricsCalculator2 -> há codigo na resposta e está pegando o skeleton de fall back :V
+
+GPT-3.5 - aparentemente ok
+GPT-4.5 - aparentemente ok
+
+
+
+
+GPT-4-Turbo:
+PushBoxGame.py, validar se os conteudos removidos nao cagaram a endentação.
+Cagou mesmo, estava tudo na mesma
+
+Wizard:
+CalendarUtil: erro nos comentarios, validar se foi a sanitização que fez isso. Ta certo! original com mesmo erro
+
+
+Sim, é perfeitamente possível que um código seja considerado um "erro" (error) no ClassEval mesmo que ele não possua erros de sintaxe e seja capaz de ser "lido" pelo interpretador Python.
+
+No contexto deste benchmark e do framework unittest utilizado, a classificação de "error" não se refere apenas a falhas de compilação ou sintaxe, mas sim a exceções de tempo de execução (runtime exceptions) que impedem a conclusão do teste.
+Aqui estão os motivos pelos quais o seu caso (SE-Eval_69), sendo um código "incompleto", foi classificado como error em vez de apenas fail:
+Ausência de Métodos (AttributeError): Se o código gerado está incompleto e falta a definição de um método que o teste tenta chamar, o Python lançará um AttributeError. Como os testes do ClassEval são baseados no esqueleto da classe
+, eles tentam obrigatoriamente interagir com os métodos previstos. A ocorrência de um AttributeError é uma das causas mais frequentes de erro registradas no benchmark.
+
+Falha de Tipagem ou Operação (TypeError/KeyError): Se o modelo gerou apenas parte do código e deixou variáveis não inicializadas ou operou com tipos incompatíveis (comum em códigos parciais), o interpretador lançará exceções como TypeError ou KeyError. No ClassEval, essas interrupções técnicas são contabilizadas como error.
+Diferença entre Fail e Error:
+Um Fail (falha) ocorre quando o código executa todas as instruções, mas o resultado final é diferente do esperado (um AssertionError).
+Um Error (erro) ocorre quando o código sequer consegue chegar ao ponto de verificação da resposta porque "quebrou" antes disso devido a uma exceção não tratada ou timeout (o ClassEval limita cada teste a 5 segundos).
+Dependência de Campos: Códigos incompletos muitas vezes falham ao inicializar atributos no construtor (__init__). Se um método tenta acessar um campo da classe que não foi criado, o teste resultará em erro por falha de dependência de campo (field dependency).
+Portanto, o seu resultado para o SE-Eval_69 mostra que a única amostra gerada (EachTestResult: ["error"]) provavelmente não implementou os métodos ExtractTextFromPdfs, MergePdfs, etc., ou os deixou de uma forma que o Python não conseguiu executar a chamada de função, gerando uma interrupção técnica em vez de uma simples resposta errada.
+
+
+Principalmente para o Wizard. 
+muitas respostas do modelo foram algo como:
+
+"falta implemntar o método XPTO, aqui está a implementação deste método:
+{{implementacao somente do método}}
+"
+
+sendo assim, inviavel nesse estudo inferir / juntar a implmentacao dada no esqueleto, 
+isso deveria ser uma funcao do próprio modelo. Nesses caso e outros que nao foi possivel utilizar
+uma resposta viavel, foi utilizado o esqueleto do código dado. 

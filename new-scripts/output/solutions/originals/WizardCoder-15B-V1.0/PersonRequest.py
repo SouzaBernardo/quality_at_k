@@ -1,0 +1,94 @@
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+### Instruction:
+Please complete the class PersonRequest in the following code.
+class PersonRequest:
+    """
+    This class validates input personal information data and sets invalid fields to None based to specific rules.
+    """
+
+    def __init__(self, name: str, sex: str, phoneNumber: str):
+        """
+        Initialize PersonRequest object with the provided information.
+        :param name: str, the name of the person
+        :param sex: str, the sex of the person
+        :param phoneNumber: str, the phone number of the person
+        """
+        self.name = self._validate_name(name)
+        self.sex = self._validate_sex(sex)
+        self.phoneNumber = self._validate_phoneNumber(phoneNumber)
+
+
+    def _validate_name(self, name: str) -> str:
+        """
+        Validate the name and return it. If name is empty or exceeds 33 characters in length, set to None.
+        :param name: str, the name to validate
+        :return: str, the validated name or None if invalid
+        """
+
+
+    def _validate_sex(self, sex: str) -> str:
+        """
+        Validate the sex and return it. If sex is not Man, Woman, or UGM, set to None.
+        :param sex: str, the sex to validate
+        :return: str, the validated sex or None if invalid
+        """
+
+    def _validate_phoneNumber(self, phoneNumber: str) -> str:
+        """
+        Validate the phone number and return it. If phoneNumber is empty or not an 11 digit number, set to None.
+        :param phoneNumber: str, the phone number to validate
+        :return: str, the validated phone number or None if invalid
+        """
+
+### Response:Here's the completed code for the `PersonRequest` class:
+
+```python
+class PersonRequest:
+    """
+    This class validates input personal information data and sets invalid fields to None based to specific rules.
+    """
+
+    def __init__(self, name: str, sex: str, phoneNumber: str):
+        """
+        Initialize PersonRequest object with the provided information.
+        :param name: str, the name of the person
+        :param sex: str, the sex of the person
+        :param phoneNumber: str, the phone number of the person
+        """
+        self.name = self._validate_name(name)
+        self.sex = self._validate_sex(sex)
+        self.phoneNumber = self._validate_phoneNumber(phoneNumber)
+
+    def _validate_name(self, name: str) -> str:
+        """
+        Validate the name and return it. If name is empty or exceeds 33 characters in length, set to None.
+        :param name: str, the name to validate
+        :return: str, the validated name or None if invalid
+        """
+        if not name or len(name) > 33:
+            return None
+        return name
+
+    def _validate_sex(self, sex: str) -> str:
+        """
+        Validate the sex and return it. If sex is not Man, Woman, or UGM, set to None.
+        :param sex: str, the sex to validate
+        :return: str, the validated sex or None if invalid
+        """
+        if sex not in ["Man", "Woman", "UGM"]:
+            return None
+        return sex
+
+    def _validate_phoneNumber(self, phoneNumber: str) -> str:
+        """
+        Validate the phone number and return it. If phoneNumber is empty or not an 11 digit number, set to None.
+        :param phoneNumber: str, the phone number to validate
+        :return: str, the validated phone number or None if invalid
+        """
+        if not phoneNumber or not phoneNumber.isdigit() or len(phoneNumber)!= 11:
+            return None
+        return phoneNumber
+```
+
+The `_validate_name`, `_validate_sex`, and `_validate_phoneNumber` methods are private methods that validate the input data and return the validated data or `None` if the data is invalid. The `PersonRequest` constructor calls these private methods to set the validated data to the corresponding instance variables. If any of the validation methods return `None`, the corresponding instance variable is set to `None`.
