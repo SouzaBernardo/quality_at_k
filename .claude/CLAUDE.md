@@ -16,7 +16,7 @@ Quality@1(t) = Pass@1(t) × (1 − min(1, β × SQALE_Index(t) / NCLOC(t)))
 
 ## Decisões fixadas
 - GroundTruth: `pass_val = 1.0` (não está no `pass_at_greedy_value.csv`)
-- PartialSuccess: `fqs = 0.0` (não conta como sucesso)
+- PartialSuccess: aplica a fórmula com o `pass_val` parcial real (ex: 0.75 × penalidade SQALE)
 - `sqale_index` ou `ncloc` ausentes/NaN: assume 0 (sem penalidade)
 - `fqs_aggregated.csv`: GroundTruth sempre na 1ª linha, resto em ordem decrescente de `fqs_mean`
 

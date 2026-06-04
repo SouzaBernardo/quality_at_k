@@ -1,0 +1,14 @@
+model,strategy,status,count,pass_val_mean,fqs_mean
+GPT-3.5-Turbo,H,Fail,26,0.000000,0.000000
+GPT-3.5-Turbo,H,PartialSuccess,8,0.647917,0.647917
+GPT-3.5-Turbo,H,Success,26,1.000000,0.988028
+GPT-3.5-Turbo,H,error,40,0.000000,0.000000
+GPT-4-Turbo,H,Fail,20,0.000000,0.000000
+GPT-4-Turbo,H,PartialSuccess,13,0.733883,0.729556
+GPT-4-Turbo,H,Success,37,1.000000,0.987475
+GPT-4-Turbo,H,error,30,0.000000,0.000000
+GroundTruth,GT,Success,100,1.000000,0.983628
+WizardCoder-15B-V1.0,H,Fail,22,0.000000,0.000000
+WizardCoder-15B-V1.0,H,PartialSuccess,3,0.666667,0.654762
+WizardCoder-15B-V1.0,H,Success,10,1.000000,0.975341
+WizardCoder-15B-V1.0,H,error,65,0.000000,0.000000
