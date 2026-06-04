@@ -7,24 +7,10 @@ from sort_csv import sort_df
 import pandas as pd
 
 ROOT = pathlib.Path(__file__).parent.parent
-SONAR_DIR = ROOT / "sonar-metrics" / "new"
-PASS_AT_K_CSV = SONAR_DIR / "pass_at_1_greedy_per_task.csv"
+SONAR_DIR = ROOT / "output" / "results"
+PASS_AT_K_CSV = SONAR_DIR / "pass_results.csv"
 OUTPUT_CSV = SONAR_DIR / "combined_sonar_metrics.csv"
 
-MODEL_KEY_MAP = {
-    "ChatGLM": "ChatGLM",
-    "GPT-3.5-Turbo": "GPT-3.5",
-    "GPT-4-Turbo": "GPT-4",
-    "PolyCoder-2.7B": "PolyCoder",
-    "Vicuna": "Vicuna",
-    "WizardCoder-15B-V1.0": "WizardCoder",
-    "codegeex2-6b": "CodeGeeX",
-    "incoder": "Incoder",
-    "instruct-codegen-16B": "Instruct-CodeGen",
-    "santacoder-1.1B": "SantaCoder",
-    "starcoder-instruct-15B": "Instruct-StarCoder",
-    "GroundTruth": None,
-}
 
 # Matches the strategy/sampling suffix from the middle of the filename
 _STRATEGY_PATTERNS = [
@@ -34,7 +20,8 @@ _STRATEGY_PATTERNS = [
     (re.compile(r"_100_c_t0$"), "H"),
     (re.compile(r"_100_m_dire$"), "C"),
     (re.compile(r"_100_m_iter$"), "I"),
-    (re.compile(r"$"), "GT"),  # GroundTruth fallback
+    (re.compile(r"^GroundTruth$"), "GT"),
+    (re.compile(r"$"), "H"),  # default for all other models
 ]
 
 
@@ -63,7 +50,7 @@ def parse_file_status(filename: str) -> tuple[str, str]:
 def main() -> None:
     pass_df = pd.read_csv(PASS_AT_K_CSV)
     pass_lookup = {
-        (r["model"], r["task"]): r["pass@1_value"]
+        (r["model"], r["class_name"]): {"pass_value": r["pass_value"], "status": r["status"]}
         for _, r in pass_df.iterrows()
     }
 
@@ -76,8 +63,6 @@ def main() -> None:
     for csv_path in csv_files:
         model, strategy = parse_filename(csv_path)
 
-        model_key = MODEL_KEY_MAP.get(model)
-        model_strategy_key = f"{model_key}_{strategy}" if model_key is not None and strategy != "N/A" else None
         is_ground_truth = (model == "GroundTruth")
 
         df = pd.read_csv(csv_path)
@@ -85,12 +70,19 @@ def main() -> None:
         rows = []
         for _, row in df.iterrows():
             filename = str(row.get("file", ""))
-            base_task, status = parse_file_status(filename)
+            base_task, _ = parse_file_status(filename)
 
             if is_ground_truth:
                 pass_val = 1.0
+                status = "Success"
             else:
-                pass_val = pass_lookup.get((model_strategy_key, base_task)) if model_strategy_key else None
+                entry = pass_lookup.get((model, base_task))
+                if entry is not None:
+                    pass_val = entry["pass_value"]
+                    status = entry["status"]
+                else:
+                    pass_val = None
+                    status = "N/A"
 
             ncloc = row.get("ncloc")
             sqale_index = row.get("sqale_index")
@@ -103,9 +95,9 @@ def main() -> None:
 
             if status == "N/A" or pass_val is None:
                 fqs = None
-            elif status != "Success":
+            elif status in ("Fail", "error"):
                 fqs = 0.0
-            else:
+            else:  # Success or PartialSuccess: apply formula with actual pass_val
                 nl = 0.0 if pd.isna(ncloc) else float(ncloc)
                 si = 0.0 if pd.isna(sqale_index) else float(sqale_index)
                 if nl == 0:

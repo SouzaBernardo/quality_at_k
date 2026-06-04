@@ -16,7 +16,7 @@ METRICS = [
     "sqale_index",
 ]
 
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "sonar-metrics", "new", "raw")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output", "results", "raw")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 

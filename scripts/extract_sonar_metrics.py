@@ -17,7 +17,8 @@ METRICS = [
     "sqale_index",
 ]
 
-OUTPUT = os.path.join(os.path.dirname(__file__), "..", "sonar-metrics", "new", "raw", "sonar_metrics.csv")
+OUTPUT = os.path.join(os.path.dirname(__file__), "..", "output", "results", "raw", "sonar_metrics.csv")
+os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
 
 resp = requests.get(f"{BASE}/api/projects/search?ps=500", auth=AUTH)
 resp.raise_for_status()

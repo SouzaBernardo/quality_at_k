@@ -5,19 +5,17 @@ import pathlib
 SCRIPTS_DIR = pathlib.Path(__file__).parent
 ROOT = SCRIPTS_DIR.parent
 
-# (type, path_relative_to_root)
 PIPELINE = [
-    ("sh",  "run_sonar.sh"),
-    ("py",  "scripts/extract_all_sonar_metrics_per_file.py"),
+    ("py",  "scripts/take_solution.py"),
     ("py",  "scripts/extract_sonar_metrics.py"),
+    ("py",  "scripts/extract_all_sonar_metrics_per_file.py"),
     ("py",  "scripts/merge_sonar_metrics.py"),
-    ("py",  "scripts/aggregate_fqs.py"),
+    ("py",  "scripts/aggregate_results.py"),
 ]
 
 CHECKS = [
-    ("py",  "scripts/count_per_model_strategy.py"),
-    ("py",  "scripts/check_pass_val.py"),
-    ("py",  "scripts/find_duplicates.py"),
+    ("py",  "scripts/verify.py"),
+    ("py",  "scripts/generate_comparations.py"),
 ]
 
 

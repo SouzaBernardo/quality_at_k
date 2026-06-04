@@ -3,237 +3,123 @@ import os
 import json
 import re
 import pathlib
+import textwrap
 from typing import Optional
 
-PROJECT_ROOT = pathlib.Path(__file__).parent.parent
-
-'''
-- guardar o jeito que veio (cru) e o que limpamos
-
-opcoes:
-    - pegar tudo de uma ia
-    - ter certeza que o GPT-4 foi o melhor resultado
-        - GPT-4 melhor
-        - se der tempo avancar para o pior caso (Poly)
-'''
-def _strip_leading_prose(text: str) -> str:
-    match = re.search(r'^(?:import |from |class |def |@)', text, re.MULTILINE)
-    return text[match.start():] if match else text
-
-
-def _strip_trailing_prose(text: str) -> str:
-    text = re.sub(r'(?is)\n\n(?:In this example|In the above example|Here\'?s?\s+an?\s+example)[^\n]*.*', '', text)
-    text = re.sub(r'(?s)\n\nOutput:.*', '', text)
-    text = re.sub(r'(?is)\n\n(?:This completes?|This completed|The implementation is)[^\n]*.*', '', text)
-    text = re.sub(r'(?is)\n\n(?:Please let me know|Please note that|Both methods have)[^\n]*.*', '', text)
-    text = re.sub(r'(?is)\n\n(?:Note that|With these changes)[^\n]*.*', '', text)
-    return text
-
-
-_ENGLISH_WORDS_RE = re.compile(
-    r'\b(?:a|an|the|all|of|in|for|from|with|to|by|and|or|that|which|'
-    r'its|their|is|are|was|were|be|been|have|has|had|this|these|those)\b',
-    re.IGNORECASE,
-)
-_PYTHON_STARTER_RE = re.compile(
-    r'^(?:import|from|class|def|if|elif|else|for|while|try|except|finally|'
-    r'with|return|yield|raise|pass|break|continue|assert|del|global|'
-    r'nonlocal|lambda|#|@|\d|[a-z_]\w*\s*[=(.\[\'"@])',
-)
-
-
-def _is_prose_statement(line: str) -> bool:
-    s = line.strip()
-    if not s:
-        return False
-    if not re.match(r'^[A-Z]', s):
-        return False
-    if not (s.endswith('.') or s.endswith(':')):
-        return False
-    if len(s.split()) < 4:
-        return False
-    if _PYTHON_STARTER_RE.match(s):
-        return False
-    return bool(_ENGLISH_WORDS_RE.search(s))
-
-
-def _extract_last_code_block(text: str) -> str:
-    """For WizardCoder format: when ### Response: appears mid-file, extract the last code block."""
-    if not re.search(r'^###', text, re.MULTILINE):
-        return text
-    parts = re.split(r'^###[^\n]*\n?', text, flags=re.MULTILINE)
-    for part in reversed(parts):
-        candidate = _strip_leading_prose(part)
-        if re.search(r'^(?:import |from |class |def |@)', candidate, re.MULTILINE):
-            return candidate
-    return text
-
-
-def _strip_markdown_non_code_lines(text: str) -> str:
-    """Remove markdown bullets, numbered lists, and English prose statements outside strings/comments."""
-    lines = text.split('\n')
-    result = []
-    in_triple = False
-    for line in lines:
-        stripped = line.strip()
-        count_dq = line.count('"""')
-        count_sq = line.count("'''")
-        if (count_dq % 2 == 1) or (count_sq % 2 == 1):
-            in_triple = not in_triple
-        if not in_triple and not stripped.startswith('#'):
-            if re.match(r'^[-*]\s+', stripped):
-                continue
-            if re.match(r'^\d+\.\s+[A-Z]', stripped):
-                continue
-            if _is_prose_statement(stripped):
-                continue
-        result.append(line)
-    return '\n'.join(result)
-
-
-def remove_comments(texto: str) -> str:
-    regex_rep_test = [
-        (r'```python.*?', ''),  # must come before the generic ``` pattern
-        (r'```', ''),
-        (r'<\|[^|]*\|>', ''),  # InCoder/FIM tokenizer markers e.g. <|/ file |>
-        (r'Please replace \'secret\' with your actual secret key for JWT decoding.', ''),
-        (r'(?m)^###[^\n]*\n?', ''),  # Remove markdown headers (multiline)
-        (r'(?s)This code .*?$', ''),  # Remove explanatory text
-        (r'(?s)In this code, .*?$', ''),  # Remove first-person commentary
-        (r'(?s)Please note .*?$', ''),  # Remove implementation notes
-    ]
-
-    new_texto = str(texto)
-    new_texto = _extract_last_code_block(new_texto)
-    for pattern, repl in regex_rep_test:
-        new_texto = re.sub(pattern, repl, new_texto, flags=re.IGNORECASE)
-    new_texto = _strip_markdown_non_code_lines(new_texto)
-    new_texto = _strip_leading_prose(new_texto)
-    new_texto = _strip_trailing_prose(new_texto)
-
-    return new_texto.strip()
-
-
-_FILE_PREFIX_TO_MODEL = {
-    'GPT-4':              'GPT-4',
-    'GPT-3.5':            'GPT-3.5',
-    'ChatGPT':            'GPT-3.5',
-    'PolyCoder':          'PolyCoder',
-    'WizardCoder':        'WizardCoder',
-    'codegeex2':          'CodeGeeX',
-    'CodeGeeX':           'CodeGeeX',
-    'instruct-codegen':   'Instruct-CodeGen',
-    'santacoder':         'SantaCoder',
-    'SantaCoder':         'SantaCoder',
-    'starcoder-instruct': 'Instruct-StarCoder',
-    'instruct-StarCoder': 'Instruct-StarCoder',
-    'incoder':            'Incoder',
-    'Vicuna':             'Vicuna',
-    'ChatGLM':            'ChatGLM',
+MODELS = {
+    'GPT-4':              'GPT-4-Turbo',
+    'GPT-3.5':            'GPT-3.5-Turbo',
+    'WizardCoder':        'WizardCoder-15B-V1.0',
 }
+STRATEGY = "H_greedy"
+STRATEGY_KEY = "H(greedy)"  # format used as key in detailed_result.json
 
+PROJECT_ROOT = pathlib.Path(__file__).parent.parent
+FILE_SUFIX = f"_class_{STRATEGY}"
 
-def get_model_key(file_name: str) -> Optional[str]:
-    """Map input file name to the corresponding key in detailed_result.json.
-    Returns None if the model is not part of the ClassEval study.
+def isNotToAnalisyze(file_name: str) -> bool:
+    not_have_sufix = FILE_SUFIX not in file_name
+    not_in_models = file_name.replace(f"{FILE_SUFIX}.json", '') not in MODELS.values()
+    return not_have_sufix or not_in_models
 
-    Examples:
-        GPT-4-Turbo_method_C_greedy.json -> GPT-4_C(greedy)
-        starcoder-instruct-15B_class_H_greedy.json -> Instruct-StarCoder_H(greedy)
-        CodeLlama-13b-Instruct-hf_method_C_greedy.json -> None
-    """
-    name = file_name.replace('.json', '')
-    parts = name.split('_')
-    raw_model = parts[0]
+def get_task_status(task_data: dict) -> tuple:
+    test_class = task_data.get("TestClass", {})
+    class_each = test_class.get("ClassEachTestResult", [])
+    class_result = class_each[0] if class_each else "class_fail"
 
-    model = next(
-        (v for prefix, v in _FILE_PREFIX_TO_MODEL.items() if raw_model.lower().startswith(prefix.lower())),
-        None,
-    )
-    if model is None:
-        return None
-
-    mode = parts[2] if len(parts) > 2 else 'C'
-    greedy_suffix = '(greedy)' if 'greedy' in name else ''
-    return f"{model}_{mode}{greedy_suffix}"
-
-
-def get_model_key_v0(file_name: str) -> Optional[str]:
-    """Map model_output (original ClassEval) file name to detailed_result.json key.
-
-    Strategy codes: c → H (Holística), m_iter → I (Incremental), m_dire → C (Composicional)
-    Greedy: _t0 suffix for class-level; no _rep5 suffix for method-level.
-
-    Examples:
-        ChatGLM_100_c_t0.json       -> ChatGLM_H(greedy)
-        incoder_100_m_iter.json     -> Incoder_I(greedy)
-        Vicuna_100_m_dire_rep5.json -> Vicuna_C
-    """
-    name = file_name.replace('.json', '')
-    parts = name.split('_')
-    raw_model = parts[0]
-
-    model = next(
-        (v for prefix, v in _FILE_PREFIX_TO_MODEL.items() if raw_model.lower().startswith(prefix.lower())),
-        None,
-    )
-    if model is None:
-        return None
-
-    rest = parts[1:]
-    if rest and rest[0] == '100':
-        rest = rest[1:]
-
-    if not rest:
-        return None
-
-    if rest[0] == 'c':
-        mode = 'H'
-        sampling = rest[1] if len(rest) > 1 else ''
-        greedy_suffix = '(greedy)' if sampling == 't0' else ''
-    elif rest[0] == 'm':
-        sub = rest[1] if len(rest) > 1 else ''
-        if sub == 'iter':
-            mode = 'I'
-        elif sub == 'dire':
-            mode = 'C'
-        else:
-            return None
-        greedy_suffix = '' if 'rep5' in rest else '(greedy)'
+    if class_result == "class_success":
+        return "Success", 1.0
+    elif class_result == "class_partial_success":
+        method_entries = {k: v for k, v in task_data.items() if k != "TestClass"}
+        total = len(method_entries)
+        passed = sum(1 for v in method_entries.values() if isinstance(v, dict) and v.get("success", 0) > 0)
+        pass_value = passed / total if total > 0 else 0.0
+        return "PartialSuccess", pass_value
     else:
-        return None
+        for test_name, test_data in task_data.items():
+            if test_name == "TestClass":
+                continue
+            if isinstance(test_data, dict) and test_data.get("error", 0) > 0:
+                return "error", 0.0
+        return "Fail", 0.0
 
-    return f"{model}_{mode}{greedy_suffix}"
+def read_detailed_results(json_path: pathlib.Path) -> dict:
+    with open(json_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    results = {}
+    for short_name, full_name in MODELS.items():
+        key = f"{short_name}_{STRATEGY_KEY}"
+        if key not in data:
+            print(f"Warning: key '{key}' not found in detailed_result.json")
+            continue
+        results[full_name] = {}
+        for task_key, task_data in data[key].items():
+            task_id = task_key.replace("SE-Eval_", "ClassEval_")
+            status, pass_value = get_task_status(task_data)
+            results[full_name][task_id] = {"pass_value": pass_value, "status": status}
+    return results
+
+def save_results_csv(results: dict, output_path: pathlib.Path):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["model", "strategy", "task", "class_name", "pass_value", "status"])
+        for model, tasks in results.items():
+            for task, info in tasks.items():
+                writer.writerow([model, STRATEGY, task, info.get("class_name", ""), info["pass_value"], info["status"]])
+
+def _best_fence(text: str) -> str:
+    """Return the largest python-tagged fence; fall back to the largest untagged fence."""
+    python_fences = re.findall(r'```python\n?(.*?)\n?```', text, flags=re.DOTALL)
+    if python_fences:
+        return max(python_fences, key=len)
+    plain_fences = re.findall(r'```\n?(.*?)\n?```', text, flags=re.DOTALL)
+    return max(plain_fences, key=len) if plain_fences else ""
 
 
-def _is_greedy_v0(file_name: str) -> bool:
-    """Select greedy/T0 files from model_output directory.
+def clean_model_output(model_predict: str) -> str:
+    text = model_predict
 
-    Class-level (_c_): requires _t0 sampling (excludes _5).
-    Method-level (_m_): requires absence of _rep5 (default = greedy).
-    """
-    name = file_name.replace('.json', '')
-    if '_m_' in name:
-        return 'rep5' not in name
-    return '_t0' in name
+    # WizardCoder pattern: ### Instruction: <skeleton> ### Response: <prose + code>
+    # The response section may contain a fenced block with the actual implementation;
+    # fall back to the instruction skeleton only when the response has no fence.
+    if '### Response:' in text:
+        resp_idx = text.find('### Response:')
+        response_section = text[resp_idx + len('### Response:'):]
+        best = _best_fence(response_section)
+        if best and 'class ' in best:
+            return textwrap.dedent(best).strip()
+        # Unclosed fence (truncated output): extract from ```python to end of text.
+        # Only apply when the fence has no closing ``` — if it does, it was already
+        # handled by _best_fence above (just didn't contain a class definition).
+        unclosed = re.search(r'```python\n?(.*)', response_section, flags=re.DOTALL)
+        if unclosed:
+            content = unclosed.group(1)
+            if '```' not in content and 'class ' in content:
+                return textwrap.dedent(content).strip()
+        # No fence with class definition — fall back to the instruction skeleton
+        instr_idx = text.find('### Instruction:')
+        start = (instr_idx + len('### Instruction:')) if instr_idx != -1 else 0
+        code_section = text[start:resp_idx]
+        code_section = re.sub(r'Please complete the class[^\n]*\n', '', code_section)
+        return textwrap.dedent(code_section).strip()
 
+    # GPT-4 pattern: prose preamble + ```python\n<code>\n``` + prose postamble
+    # Extract ONLY the fenced content — the largest fence is the complete implementation
+    best = _best_fence(text)
+    if best:
+        return textwrap.dedent(best).strip()
 
-def get_predict_status(csv_results: dict, model_key: str, class_name: str) -> str:
-    csv_model = model_key.replace('(greedy)', '').strip()
-    return csv_results.get((csv_model, class_name), 'Unknown')
+    # GPT-3.5 / fallback: prose prefix followed by Python code
+    # Discard leading lines until the first recognisable Python token
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if re.match(r'^(import |from |class |def |@|#)', line.strip()):
+            return textwrap.dedent('\n'.join(lines[i:])).strip()
 
-
-def process_predict_item(class_name: str, class_name_idx: str, file_name: str, predictContent: str):
-    file_name_without_extension = file_name.replace('.json', '')
-    content_path = PROJECT_ROOT / "classeval_quality" / "output" / file_name_without_extension / class_name
-    original_content_path = content_path / "original"
-    filtered_content_path = content_path / "filtered"
-
-    new_file_name = f"{class_name_idx}.py"
-    save_file(predictContent, original_content_path, new_file_name)
-
-    predict = remove_comments(predictContent)
-    save_file(predict, filtered_content_path, new_file_name)
+    # No Python code found at all — return empty string so the caller can skip
+    return ""
 
 def save_file(content: str, content_path: pathlib.Path, file_name: str):
     content_path = pathlib.Path(content_path)
@@ -243,74 +129,52 @@ def save_file(content: str, content_path: pathlib.Path, file_name: str):
         f.write(content)
 
 def main():
-    csv_path = PROJECT_ROOT / "classeval_quality" / "pass_at_1_greedy_per_task.csv"
-    csv_results = {}
-    with open(csv_path, encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            csv_results[(row['model'], row['task'])] = row['status']
+    # Part 1: read detailed_result.json and save CSV
+    json_path = PROJECT_ROOT / "output" / "ClassEval_output" / "result" / "detailed_result.json"
+    csv_output = PROJECT_ROOT / "output" / "results" / "pass_results.csv"
 
-    input_dir = PROJECT_ROOT / "output" / "model_output_v1.0.0"
+    results = read_detailed_results(json_path)
+
+    # Part 2: extract and sanitize predictions from model_output_v1.0.0
+    input_dir = PROJECT_ROOT / "output" / "ClassEval_output" / "model_output_v1.0.0"
+    solutions_dir = PROJECT_ROOT / "output" / "solutions"
+    originals_dir = PROJECT_ROOT / "output" / "solutions" / "originals"
+
     for file_name in os.listdir(input_dir):
-        if 'greedy' not in file_name:
+        if isNotToAnalisyze(file_name):
             continue
 
-        model_key = get_model_key(file_name)
-        if model_key is None:
-            continue
+        model_name = file_name.replace(f"{FILE_SUFIX}.json", "")
+        model_json_path = input_dir / file_name
+        print(f"Processing {file_name}")
 
-        input_file = input_dir / file_name
-        with open(input_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(model_json_path, encoding="utf-8") as f:
+            tasks = json.load(f)
 
-        middleFile = file_name.replace(".json", "")
-        (PROJECT_ROOT / "classeval_quality" / "output" / middleFile).mkdir(parents=True, exist_ok=True)
+        for task in tasks:
+            task_id = task["task_id"]
+            class_name = task["class_name"]
 
-        for item in data:
-            class_name = item.get("class_name", "UnknownClass")
+            # enrich CSV results with class_name
+            if model_name in results and task_id in results[model_name]:
+                results[model_name][task_id]["class_name"] = class_name
 
-            predictArrayContent = item.get("predict", [])
-            for predict_item in predictArrayContent:
-                status = get_predict_status(csv_results, model_key, class_name)
-                class_name_idx = f"{class_name}{status}"
-                process_predict_item(class_name, class_name_idx, file_name, predict_item)
+            predicts = task.get("predict", [])
+            if not predicts:
+                continue
+            
+            # save on originals folder
+            save_file(predicts[0], originals_dir / model_name, f"{class_name}.py")
+            
+            cleaned = clean_model_output(predicts[0])
+            if not cleaned:
+                print(f"  Warning: no Python code found for {model_name}/{class_name}, saving empty file.")
+            save_file(cleaned, solutions_dir / model_name, f"{class_name}.py")
 
-    input_dir_v0 = PROJECT_ROOT / "output" / "model_output"
-    look_to_LLM = ["chatglm", "incoder", "vicuna"]
+    save_results_csv(results, csv_output)
+    print(f"CSV saved to {csv_output}")
+    print("Done.")
 
-    for file_name in os.listdir(input_dir_v0):
-        if not _is_greedy_v0(file_name):
-            continue
-
-        if not any(file_name.lower().startswith(llm) for llm in look_to_LLM):
-            continue
-
-        model_key = get_model_key_v0(file_name)
-        if model_key is None:
-            continue
-
-        input_file = input_dir_v0 / file_name
-        with open(input_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        middleFile = file_name.replace(".json", "")
-        (PROJECT_ROOT / "classeval_quality" / "output" / middleFile).mkdir(parents=True, exist_ok=True)
-
-        for item in data:
-            class_name = item.get("class_name", "UnknownClass")
-
-            predict_list = item.get("predict", [])
-            if '_m_iter' in file_name:
-                if not predict_list:
-                    continue
-                predict_item = predict_list[-1]
-                status = get_predict_status(csv_results, model_key, class_name)
-                class_name_idx = f"{class_name}{status}"
-                process_predict_item(class_name, class_name_idx, file_name, predict_item)
-            else:
-                for predict_item in predict_list:
-                    status = get_predict_status(csv_results, model_key, class_name)
-                    class_name_idx = f"{class_name}{status}"
-                    process_predict_item(class_name, class_name_idx, file_name, predict_item)
 
 if __name__ == "__main__":
     main()
