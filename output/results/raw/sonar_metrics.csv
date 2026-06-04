@@ -1,0 +1,5 @@
+project,ncloc,lines,files,classes,functions,bugs,vulnerabilities,code_smells,violations,complexity,cognitive_complexity,coverage,line_coverage,duplicated_lines_density,duplicated_blocks,comment_lines_density,sqale_rating,reliability_rating,security_rating,sqale_index
+GPT-3.5-Turbo,2833,7553,100,97,478,0,0,69,69,918,790,,,0.0,0,59.0,1.0,1.0,1.0,269
+GPT-4-Turbo,2597,4747,100,99,496,0,0,55,55,878,653,,,0.0,0,38.3,1.0,1.0,1.0,230
+GroundTruth,3484,10494,100,100,497,4,0,113,117,1165,1182,,,0.0,0,63.4,1.0,5.0,1.0,629
+WizardCoder-15B-V1.0,1928,6293,100,96,475,0,0,75,75,724,482,,,0.0,0,64.3,1.0,1.0,1.0,379

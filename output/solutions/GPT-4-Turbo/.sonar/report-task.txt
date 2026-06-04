@@ -1,0 +1,6 @@
+projectKey=GPT-4-Turbo
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=GPT-4-Turbo
+ceTaskId=bd9b7270-735f-40c3-8b73-b099b8beda97
+ceTaskUrl=http://localhost:9000/api/ce/task?id=bd9b7270-735f-40c3-8b73-b099b8beda97
