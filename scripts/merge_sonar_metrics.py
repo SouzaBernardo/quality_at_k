@@ -90,6 +90,7 @@ def main() -> None:
             complexity = row.get("complexity")
             code_smells = row.get("code_smells")
 
+            cognitive_complexity = 0.0 if pd.isna(cognitive_complexity) else float(cognitive_complexity)
             complexity = 0.0 if pd.isna(complexity) else float(complexity)
             code_smells = 0.0 if pd.isna(code_smells) else float(code_smells)
 
@@ -101,7 +102,7 @@ def main() -> None:
                 nl = 0.0 if pd.isna(ncloc) else float(ncloc)
                 si = 0.0 if pd.isna(sqale_index) else float(sqale_index)
                 if nl == 0:
-                    fqs = float(pass_val)
+                    fqs = 0.0
                 else:
                     fqs = compute_fqs(float(pass_val), si, nl)
 
