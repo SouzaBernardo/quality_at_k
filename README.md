@@ -1,35 +1,21 @@
-# Quality@K — Análise de Qualidade Estática de Código Gerado por LLMs
+# Quality@1: Uma Métrica Baseada em Atributos de Qualidade de Software para Avaliação de Código Fonte Gerado por Grandes Modelos de Linguagem
 
 > 🇺🇸 [Read in English](docs/README.en.md)
 
-Este repositório contém o pipeline de análise estática utilizado no TCC *"Avaliação da Qualidade de Código Gerado por Large Language Models"*. O objetivo é investigar se código funcionalmente correto (medido pelo Pass@k do benchmark ClassEval) também apresenta boa qualidade estrutural, medida via SonarQube.
+Este repositório contém o pipeline de análise estática utilizado no TCC *"Quality@1: Uma Métrica Baseada em Atributos de Qualidade de Software para Avaliação de Código Fonte Gerado por Grandes Modelos de Linguagem"*. O objetivo é investigar se código funcionalmente correto (medido pelo Pass@k do benchmark ClassEval) também apresenta boa qualidade estrutural, medida via SonarQube.
 
 ## Contexto
 
-O benchmark [ClassEval](https://github.com/FudanSELab/ClassEval) avalia LLMs na geração de classes Python completas com 100 tarefas. Este trabalho analisa **11 modelos × 3 estratégias + GroundTruth = 34 grupos**:
+O benchmark [ClassEval](https://github.com/FudanSELab/ClassEval) avalia LLMs na geração de classes Python completas com 100 tarefas. Este trabalho analisa **3 modelos + GroundTruth = 4 grupos**, todos usando a estratégia Holística (H):
 
-| Modelo | Perfil |
-|--------|--------|
-| GPT-4-Turbo | Alto desempenho |
-| GPT-3.5-Turbo | Alto desempenho |
-| WizardCoder-15B-V1.0 | Alto desempenho |
-| starcoder-instruct-15B | Médio desempenho |
-| instruct-codegen-16B | Médio desempenho |
-| Vicuna | Médio desempenho |
-| ChatGLM | Médio desempenho |
-| codegeex2-6b | Baixo desempenho |
-| incoder | Baixo desempenho |
-| santacoder-1.1B | Baixo desempenho |
-| PolyCoder-2.7B | Baixo desempenho |
-| GroundTruth | Referência humana (ClassEval) |
+| Modelo | Sigla | Perfil |
+|--------|-------|--------|
+| GPT-4-Turbo | H | Alto desempenho |
+| GPT-3.5-Turbo | H | Alto desempenho |
+| WizardCoder-15B-V1.0 | H | Alto desempenho |
+| GroundTruth | GT | Referência humana (ClassEval) |
 
-### Estratégias de Geração
-
-| Sigla | Estratégia | Descrição |
-|-------|-----------|-----------|
-| `H` | Holística | Gera a classe completa de uma só vez |
-| `I` | Incremental | Constrói método a método, usando o resultado anterior como contexto |
-| `C` | Composicional | Constrói método a método de forma independente |
+A estratégia **Holística (H)** gera a classe completa de uma só vez a partir do prompt. O GroundTruth é identificado pela sigla **GT** e tem `pass@1 = 1.0` por definição.
 
 ### Métricas Coletadas
 
@@ -199,6 +185,20 @@ O script envia cada projeto para o SonarQube via `sonar-scanner`, usando os toke
     └── validation/                          # Gerado por generate_comparations.py
         └── comparation-{llm}.html
 ```
+
+## Visualizações
+
+Os gráficos em `docs/` documentam análises visuais importantes do pipeline:
+
+| Gráfico | Descrição |
+|--------|-----------|
+| ![Complexidade por status](docs/grouped_barplot_complexity_by_status.png) | Comparação de métricas de complexidade por status de classe |
+| ![Correlação entre métricas](docs/heatmap_correlation.png) | Mapa de calor de correlação entre métricas SonarQube e Quality@1 |
+| ![Fronteira de Pareto](docs/scatter_pareto_frontier.png) | Gráfico de fronteira de Pareto entre Pass@1 e Quality@1 |
+
+Além dos gráficos, há também um relatório detalhado:
+
+- `docs/relatorio_estatistico.md` — relatório estatístico detalhado das análises
 
 ## Reconstruindo a imagem Docker
 
