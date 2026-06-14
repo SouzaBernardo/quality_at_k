@@ -8,28 +8,28 @@ This repository contains the static analysis pipeline used in the thesis *"Quali
 
 The [ClassEval](https://github.com/FudanSELab/ClassEval) benchmark evaluates LLMs on generating complete Python classes across 100 tasks. This work analyzes **11 models × 3 strategies + GroundTruth = 34 groups**:
 
-| Model | Profile |
-|-------|---------|
-| GPT-4-Turbo | High performance |
-| GPT-3.5-Turbo | High performance |
-| WizardCoder-15B-V1.0 | High performance |
-| starcoder-instruct-15B | Medium performance |
-| instruct-codegen-16B | Medium performance |
-| Vicuna | Medium performance |
-| ChatGLM | Medium performance |
-| codegeex2-6b | Low performance |
-| incoder | Low performance |
-| santacoder-1.1B | Low performance |
-| PolyCoder-2.7B | Low performance |
-| GroundTruth | Human reference (ClassEval) |
+| Model                  | Profile                     |
+| ---------------------- | --------------------------- |
+| GPT-4-Turbo            | High performance            |
+| GPT-3.5-Turbo          | High performance            |
+| WizardCoder-15B-V1.0   | High performance            |
+| starcoder-instruct-15B | Medium performance          |
+| instruct-codegen-16B   | Medium performance          |
+| Vicuna                 | Medium performance          |
+| ChatGLM                | Medium performance          |
+| codegeex2-6b           | Low performance             |
+| incoder                | Low performance             |
+| santacoder-1.1B        | Low performance             |
+| PolyCoder-2.7B         | Low performance             |
+| GroundTruth            | Human reference (ClassEval) |
 
 ### Generation Strategies
 
-| Code | Strategy | Description |
-|------|----------|-------------|
-| `H` | Holistic | Generates the full class at once |
-| `I` | Incremental | Builds method by method, feeding the previous result as context |
-| `C` | Compositional | Builds method by method independently, without prior context |
+| Code | Strategy      | Description                                                     |
+| ---- | ------------- | --------------------------------------------------------------- |
+| `H`  | Holistic      | Generates the full class at once                                |
+| `I`  | Incremental   | Builds method by method, feeding the previous result as context |
+| `C`  | Compositional | Builds method by method independently, without prior context    |
 
 ### Collected Metrics
 
@@ -54,9 +54,9 @@ docker compose up
 
 SonarQube will be available at [http://localhost:9000](http://localhost:9000).
 
-| Field | Value |
-|-------|-------|
-| Username | `admin` |
+| Field    | Value          |
+| -------- | -------------- |
+| Username | `admin`        |
 | Password | `sonarLike@21` |
 
 > On the first startup, SonarQube may take a few minutes to rebuild its internal search index from the database. Wait until the interface is fully available.
@@ -75,11 +75,11 @@ Where `Pass@1(t) ∈ {0, 1}`, `β = 0.1`, `SQALE_Index` is the technical debt in
 
 The following figures are included in the repository and rendered here:
 
-| Figure | Description |
-|--------|-------------|
-| ![Complexity by status](grouped_barplot_complexity_by_status.png) | Complexity metrics grouped by class status |
-| ![Metric correlation heatmap](heatmap_correlation.png) | Correlation heatmap between SonarQube metrics and Quality@1 |
-| ![Pareto frontier scatter](scatter_pareto_frontier.png) | Pareto frontier scatter plot comparing Pass@1 and Quality@1 |
+| Figure                                                            | Description                                                 |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| ![Complexity by status](grouped_barplot_complexity_by_status.png) | Complexity metrics grouped by class status                  |
+| ![Metric correlation heatmap](heatmap_correlation.png)            | Correlation heatmap between SonarQube metrics and Quality@1 |
+| ![Pareto frontier scatter](scatter_pareto_frontier.png)           | Pareto frontier scatter plot comparing Pass@1 and Quality@1 |
 
 ### How to run
 
@@ -91,34 +91,34 @@ python3 scripts/pipeline.py
 
 Steps executed automatically:
 
-| Step | Script | Description |
-|------|--------|-------------|
-| 1 | `take_solution.py` | Extracts and sanitizes solutions from ClassEval JSONs; generates `pass_results.csv` |
-| 2 | `extract_sonar_metrics.py` | Extracts aggregated metrics per project via SonarQube API |
-| 3 | `extract_all_sonar_metrics_per_file.py` | Extracts per-file metrics for all projects via SonarQube API |
-| 4 | `merge_sonar_metrics.py` | Merges raw CSVs + `pass_results.csv`, computes FQS per task |
-| 5 | `aggregate_results.py` | Aggregates FQS by `(model, strategy, status)` |
+| Step | Script                                  | Description                                                                         |
+| ---- | --------------------------------------- | ----------------------------------------------------------------------------------- |
+| 1    | `take_solution.py`                      | Extracts and sanitizes solutions from ClassEval JSONs; generates `pass_results.csv` |
+| 2    | `extract_sonar_metrics.py`              | Extracts aggregated metrics per project via SonarQube API                           |
+| 3    | `extract_all_sonar_metrics_per_file.py` | Extracts per-file metrics for all projects via SonarQube API                        |
+| 4    | `merge_sonar_metrics.py`                | Merges raw CSVs + `pass_results.csv`, computes FQS per task                         |
+| 5    | `aggregate_results.py`                  | Aggregates FQS by `(model, strategy, status)`                                       |
 
 After the pipeline, diagnostic scripts run automatically:
 
-| Script | Description |
-|--------|-------------|
-| `verify.py` | Validates count (100 classes/model), detects Markdown contamination, AST errors, and mismatches between `combined_sonar_metrics.csv` and `pass_results.csv` |
-| `generate_comparations.py` | Generates HTML diffs (original vs. sanitized) per model in `output/validation/` |
+| Script                     | Description                                                                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `verify.py`                | Validates count (100 classes/model), detects Markdown contamination, AST errors, and mismatches between `combined_sonar_metrics.csv` and `pass_results.csv` |
+| `generate_comparations.py` | Generates HTML diffs (original vs. sanitized) per model in `output/validation/`                                                                             |
 
 ### Outputs
 
 All files are generated under `output/`:
 
-| File | Description |
-|------|-------------|
-| `output/solutions/{model}/*.py` | Sanitized solutions per model |
-| `output/solutions/originals/{model}/*.py` | Raw model responses |
-| `output/results/raw/sonar_metrics*.csv` | Raw SonarQube CSVs — per-file metrics |
-| `output/results/pass_results.csv` | Input: mapping `(model, class)` → `pass@1` + status |
-| `output/results/combined_sonar_metrics.csv` | Main output: SonarQube metrics + FQS per task |
-| `output/results/aggregated_results.csv` | Mean FQS by `(model, strategy, status)` |
-| `output/validation/comparation-{llm}.html` | HTML diffs: original vs. sanitized per model |
+| File                                        | Description                                         |
+| ------------------------------------------- | --------------------------------------------------- |
+| `output/solutions/{model}/*.py`             | Sanitized solutions per model                       |
+| `output/solutions/originals/{model}/*.py`   | Raw model responses                                 |
+| `output/results/raw/sonar_metrics*.csv`     | Raw SonarQube CSVs — per-file metrics               |
+| `output/results/pass_results.csv`           | Input: mapping `(model, class)` → `pass@1` + status |
+| `output/results/combined_sonar_metrics.csv` | Main output: SonarQube metrics + FQS per task       |
+| `output/results/aggregated_results.csv`     | Mean FQS by `(model, strategy, status)`             |
+| `output/validation/comparation-{llm}.html`  | HTML diffs: original vs. sanitized per model        |
 
 ---
 ## Visualizations
