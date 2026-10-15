@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101923">
+  <title>ClassEval e Quality@1 · Versão resumida</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101923;
+      --panel: #17232f;
+      --panel-soft: #1d2c39;
+      --text: #f3f6f8;
+      --muted: #a6b5c1;
+      --accent: #79e0bd;
+      --blue: #8cbcff;
+      --orange: #ffc178;
+      --line: #344553;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); }
+    body {
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button { font: inherit; }
+    .deck { min-height: 100svh; display: grid; grid-template-rows: 1fr auto; }
+    .slide {
+      width: min(100%, 1440px);
+      min-height: 0;
+      margin: auto;
+      padding: clamp(2rem, 6vw, 6rem) clamp(1.5rem, 8vw, 8rem);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      animation: enter .32s ease-out;
+    }
+    .slide.active { display: flex; }
+    @keyframes enter {
+      from { opacity: .25; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 950px; margin-bottom: 1.25rem; font-size: clamp(3rem, 8vw, 7rem); line-height: .99; letter-spacing: -.065em; }
+    h2 { max-width: 1000px; margin: .7rem 0 2rem; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.04; letter-spacing: -.05em; }
+    h3 { margin-bottom: .65rem; font-size: clamp(1.1rem, 2vw, 1.45rem); }
+    p, li { color: var(--muted); font-size: clamp(1rem, 1.55vw, 1.3rem); line-height: 1.55; }
+    strong { color: var(--text); }
+    .lead { max-width: 780px; font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
+    .accent { color: var(--accent); }
+    .blue { color: var(--blue); }
+    .orange { color: var(--orange); }
+    .title-meta { margin-top: 2rem; color: var(--muted); font-size: 1rem; }
+    .title-mark {
+      width: 4.2rem; height: .35rem; margin: 0 0 2rem;
+      border-radius: 2rem; background: var(--accent);
+    }
+    .grid { display: grid; gap: 1rem; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      min-width: 0; padding: clamp(1.1rem, 2.3vw, 1.8rem);
+      border: 1px solid var(--line); border-radius: 1rem;
+      background: linear-gradient(145deg, var(--panel), #14202a);
+    }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .step {
+      display: inline-grid; width: 2.1rem; height: 2.1rem; margin-bottom: 1rem;
+      place-items: center; border-radius: 50%; color: var(--bg);
+      background: var(--accent); font-size: .95rem; font-weight: 800;
+    }
+    .path, code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    code {
+      color: #dbf8ee; overflow-wrap: anywhere;
+      font-size: .88em;
+    }
+    .tree, .command {
+      margin: .9rem 0 0; padding: 1rem 1.1rem;
+      overflow-x: auto; border: 1px solid var(--line); border-radius: .8rem;
+      background: #0b131a; color: #c8d5de; font-size: clamp(.78rem, 1.25vw, 1rem); line-height: 1.65;
+    }
+    .flow {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: stretch; gap: 1.7rem; margin-top: 1.1rem;
+    }
+    .flow-step { position: relative; padding: 1.15rem; border-radius: .9rem; background: var(--panel); border: 1px solid var(--line); }
+    .flow-step:not(:last-child)::after {
+      content: "→"; position: absolute; right: -1.4rem; top: 42%;
+      color: var(--accent); font-size: 1.3rem; font-weight: 800;
+    }
+    .flow-step b { display: block; margin-bottom: .55rem; color: var(--text); }
+    .flow-step span { color: var(--muted); font-size: .95rem; line-height: 1.45; }
+    .formula {
+      margin: 1rem 0; padding: 1.2rem; border-left: 4px solid var(--accent);
+      border-radius: 0 .8rem .8rem 0; background: var(--panel);
+      color: var(--text); font: 600 clamp(1rem, 2.1vw, 1.55rem)/1.6 "SFMono-Regular", Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+    .callout { padding: 1rem 1.2rem; border: 1px solid #755c3a; border-radius: .8rem; background: #2b251c; color: #ffe3bd; }
+    .callout p { margin: 0; color: inherit; font-size: 1rem; }
+    ul { padding-left: 1.2rem; }
+    li + li { margin-top: .45rem; }
+    .outputs { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem 1.5rem; }
+    .output { padding: .85rem 0; border-bottom: 1px solid var(--line); }
+    .output p { margin: .25rem 0 0; font-size: .95rem; }
+    .controls {
+      position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center;
+      gap: .8rem; padding: .85rem clamp(1rem, 4vw, 3rem);
+      border-top: 1px solid var(--line); background: rgb(16 25 35 / 94%);
+      backdrop-filter: blur(12px);
+    }
+    .controls button {
+      min-width: 2.7rem; min-height: 2.7rem; border: 1px solid var(--line);
+      border-radius: .65rem; color: var(--text); background: var(--panel);
+      cursor: pointer;
+    }
+    .controls button:hover:not(:disabled) { border-color: var(--accent); }
+    .controls button:disabled { opacity: .4; cursor: not-allowed; }
+    .progress { height: .3rem; flex: 1; overflow: hidden; border-radius: 2rem; background: var(--line); }
+    .progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+    .counter { min-width: 4.2rem; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+    .hint { margin-left: auto; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 760px) {
+      .slide { padding: 2rem 1.25rem 3rem; }
+      .grid.two, .grid.three, .flow, .outputs { grid-template-columns: 1fr; }
+      .flow { gap: .7rem; }
+      .flow-step:not(:last-child)::after { content: "↓"; right: 1rem; top: auto; bottom: -.85rem; z-index: 1; }
+      .hint { display: none; }
+      .controls { gap: .45rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { color-scheme: light; --bg: #fff; --panel: #f1f5f7; --panel-soft: #eef2f5; --text: #15222b; --muted: #394b58; --accent: #087b5b; --blue: #195dab; --orange: #89500d; --line: #c5d0d6; }
+      html, body, .deck { background: #fff; }
+      .slide, .slide.active { display: flex !important; min-height: 100vh; page-break-after: always; break-after: page; animation: none; }
+      .controls { display: none; }
+      .tree, .command { background: #f4f7f8; color: #182832; }
+      .formula { color: #15222b; }
+      .card, .flow-step { background: #f5f8f9; }
+      .callout { background: #fff8ed; color: #563800; }
+    }
+
+    /* Layouts de fundamentação, sem dependências externas. */
+    .slide { padding: clamp(1.8rem, 4vh, 3.4rem) clamp(1.5rem, 6vw, 6rem); }
+    h1 { font-size: clamp(3rem, 7vw, 6.4rem); }
+    h2 { max-width: 1150px; font-size: clamp(2rem, 4.1vw, 3.65rem); margin-bottom: 1.65rem; }
+    .card { background: var(--panel); }
+    .flat { gap: 2.3rem; margin-top: 1rem; }
+    .flat article { min-width: 0; border-top: 2px solid var(--line); padding-top: 1.2rem; }
+    .flat article p:last-child { margin-bottom: 0; }
+    .takeaway { color: var(--text); margin: 1.6rem 0 0; padding-left: 1.1rem; border-left: 3px solid var(--accent); font-weight: 550; }
+    .source { font-size: .85rem; line-height: 1.45; margin: 1.7rem 0 0; color: var(--muted); }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: .18em; }
+    a:hover { color: var(--accent); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 0 0 1.1rem; }
+    .stats dt { font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 750; letter-spacing: -.05em; color: var(--blue); }
+    .stats dd { margin: .3rem 0 0; font-size: 1.1rem; color: var(--muted); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: clamp(1rem, 1.5vw, 1.28rem); line-height: 1.45; }
+    .data-table th { color: var(--muted); font-size: .86em; font-weight: 600; text-align: left; padding: .8rem 1rem; border-bottom: 2px solid var(--line); }
+    .data-table td { padding: 1rem; border-bottom: 1px solid var(--line); }
+    .data-table th:first-child, .data-table td:first-child { padding-left: 0; }
+    .data-table td:first-child { width: 30%; }
+    .data-table.numeric td:first-child { width: auto; }
+    .data-table.numeric { font-variant-numeric: tabular-nums; }
+    .math-display { padding: 1.5rem 0; font-size: clamp(1.7rem, 3vw, 2.7rem); color: var(--accent); }
+    math { font-family: 'Cambria Math', 'STIX Two Math', math; }
+    .sample-line { display: flex; flex-wrap: wrap; gap: .75rem; margin: .8rem 0 1.2rem; }
+    .sample { padding: .45rem .7rem; border-bottom: 2px solid var(--line); font-size: 1rem; }
+    .sample.good { color: var(--accent); border-color: var(--accent); }
+    .sample.bad { color: var(--orange); border-color: var(--orange); }
+    .big-number { color: var(--accent); font-size: 4.4rem; line-height: 1.1; margin: .8rem 0; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .big-number.orange { color: var(--orange); }
+    .definitions { margin: 1rem 0 0; }
+    .definitions > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1rem; padding: .6rem 0; border-bottom: 1px solid var(--line); }
+    .definitions dt { font-weight: 650; color: var(--accent); font-size: 1.2rem; }
+    .definitions dd { margin: 0; color: var(--muted); font-size: 1.2rem; line-height: 1.4; }
+    .references p { font-size: 1.05rem; margin-bottom: 1.3rem; }
+    .example-line { margin-top: 1.4rem; }
+    .paper-title { max-width: 1050px; font-size: clamp(1.2rem, 1.8vw, 1.55rem); }
+    .compact-lead { max-width: 100%; }
+    .controls select { width: min(26vw, 20rem); min-width: 9rem; padding: .65rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--panel); color: var(--text); font: inherit; font-size: .85rem; }
+    .controls button:focus-visible, .controls select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .controls { position: fixed; left: 0; right: 0; min-height: 4.4rem; }
+    .deck { padding-bottom: 4.4rem; grid-template-columns: minmax(0, 1fr); }
+    .slide { min-width: 0; }
+    .hint { white-space: nowrap; }
+    @media (max-width: 1000px) { .hint { display: none; } }
+    @media screen and (min-width: 761px) and (max-height: 800px) {
+      .slide { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+      h2 { margin-bottom: 1.1rem; }
+      .source, .takeaway { margin-top: 1rem; }
+      .lead { margin-bottom: 1rem; }
+      .card { padding: 1.2rem; }
+      .big-number { font-size: 3.5rem; }
+      .flat { margin-top: .6rem; }
+    }
+    @media (max-width: 760px) {
+      .slide { padding: 2rem 1.25rem; }
+      .stats { gap: .8rem; }
+      .stats dd { font-size: .85rem; }
+      .stats dt { font-size: 2.6rem; }
+      .flat { gap: 1.3rem; }
+      .data-table { font-size: .88rem; }
+      .data-table th, .data-table td { padding: .65rem .35rem; overflow-wrap: anywhere; }
+      .sample { font-size: .82rem; }
+      .math-display { font-size: 1.35rem; }
+      .definitions > div { grid-template-columns: 4.7rem 1fr; gap: .6rem; }
+      .definitions dt, .definitions dd { font-size: 1rem; }
+      .controls { padding: .65rem .75rem; }
+      .controls select { min-width: 0; width: 32vw; font-size: .75rem; }
+      .controls .progress { display: none; }
+      .counter { margin-left: auto; }
+    }
+    @media print {
+      @page { size: A4 landscape; margin: 0; }
+      .deck { display: block; padding-bottom: 0; }
+      .slide, .slide.active { width: 297mm; height: 210mm; min-height: 0; margin: 0; padding: 12mm 15mm; break-inside: avoid; }
+      .slide:last-of-type { break-after: auto; page-break-after: auto; }
+      h1 { font-size: 54pt; }
+      h2 { font-size: 32pt; margin-bottom: 6mm; }
+      h3 { font-size: 16pt; }
+      p, li { font-size: 13pt; line-height: 1.4; }
+      .lead { font-size: 18pt; }
+      .source { font-size: 8pt; margin-top: 5mm; }
+      .data-table { font-size: 13pt; }
+      .data-table th, .data-table td { padding-top: 3mm; padding-bottom: 3mm; }
+      .stats dt { font-size: 42pt; }
+      .formula { font-size: 15pt; }
+      .references p { font-size: 12pt; }
+      .takeaway { margin-top: 5mm; }
+      .flat { margin-top: 3mm; gap: 8mm; }
+      .card { padding: 5mm; }
+      .definitions dt, .definitions dd { font-size: 13pt; }
+      .sample { color: var(--text); }
+      .math-display { color: #087b5b; font-size: 27pt; }
+      .controls { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Apresentação sobre ClassEval, Pass@k, Quality@1 e SonarQube">
+    <section class="slide active" data-chapter="Introdução" aria-labelledby="s1-title">
+      <div class="title-mark"></div>
+      <p class="eyebrow">Correção funcional e qualidade do código</p>
+      <h1 id="s1-title">ClassEval e <span class="accent">Quality@1</span></h1>
+      <p class="lead">Os conceitos essenciais da avaliação funcional e da nossa proposta com SonarQube.</p>
+      <p class="title-meta">Versão resumida / Pass@k / pass_val / Quality@1</p>
+    </section>
+
+    <section class="slide" data-chapter="Artigo original" aria-labelledby="benchmark-short-title">
+      <p class="eyebrow">Artigo original</p>
+      <h2 id="benchmark-short-title">A avaliação de <span class="blue">classes completas</span></h2>
+      
+      <p class="lead compact-lead">O ClassEval avalia classes Python com métodos interdependentes.</p>
+      <div class="grid two flat">
+        <article><h3>O benchmark</h3><p><strong>100 tarefas</strong>. Cada tarefa contém uma especificação, uma suíte de testes e uma implementação humana de referência.</p></article>
+        <article><h3>O problema estudado</h3><p>Acertar funções isoladas não assegura que uma classe inteira funcione. O artigo compara <strong>11 modelos</strong> e três estratégias de geração.</p></article>
+      </div>
+      <p class="takeaway">A avaliação considera métodos individuais e o funcionamento conjunto da classe.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al. (2023), ClassEval</a>, introdução e seção 3.</p>
+    </section>
+
+    <section class="slide" data-chapter="Artigo original" aria-labelledby="tests-title">
+      <p class="eyebrow">Artigo original</p>
+      <h2 id="tests-title">O critério de <span class="accent">correção</span></h2>
+      
+      <div class="grid two">
+        <article class="card"><h3>No nível do método</h3><p>O método precisa passar em <strong>todos os seus testes</strong>. Os testes verificam retornos e alterações nos atributos do objeto.</p></article>
+        <article class="card"><h3>No nível da classe</h3><p>A classe precisa passar em <strong>todos os testes dos métodos e da classe</strong>, incluindo as interações entre operações.</p></article>
+      </div>
+      <p class="example-line"><strong>Máquina de vendas:</strong> inserir moeda, comprar um produto e conferir saldo e estoque.</p>
+      <p class="takeaway">No critério original, uma solução com 99 de 100 testes aprovados ainda reprova.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, versão 2 (2023)</a>, seções 3.2.3 e 4.4, Fig. 4.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="pass-short-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="pass-short-title">O significado e o cálculo do <span class="accent">Pass@k</span></h2>
+      
+      <p class="lead compact-lead">Chance estimada de obter ao menos uma solução correta em k alternativas.</p>
+      <div class="math-display" aria-label="Pass arroba k é a média entre as tarefas de um menos a combinação de n menos c tomados k a k dividida pela combinação de n tomados k a k">
+        <math display="block"><mrow><mi>Pass@k</mi><mo>=</mo><msub><mi>média</mi><mtext>tarefas</mtext></msub><mo>[</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mo>(</mo><mfrac linethickness="0"><mrow><mi>n</mi><mo>−</mo><mi>c</mi></mrow><mi>k</mi></mfrac><mo>)</mo></mrow><mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>k</mi></mfrac><mo>)</mo></mrow></mfrac><mo>]</mo></mrow></math>
+      </div>
+      <div class="grid three flat">
+        <article><h3>n · amostras</h3><p>Total de soluções geradas para a tarefa.</p></article>
+        <article><h3>c · corretas</h3><p>Soluções que passam em todos os testes exigidos.</p></article>
+        <article><h3>k · alternativas</h3><p>Quantidade considerada na avaliação, com k ≤ n.</p></article>
+      </div>
+      <p class="takeaway">Com k = 1, o cálculo por tarefa é c / n. Depois, calcula-se a média entre as tarefas.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al. (2023), ClassEval</a>, seção 4.4. O artigo reutiliza o estimador de Chen et al. (2021).</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="pass-example-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="pass-example-title">Cinco soluções, <span class="accent">duas corretas</span></h2>
+      
+      <p class="lead">Exemplo didático de uma tarefa com n = 5 e c = 2.</p>
+      <p class="sample-line"><span class="sample good">A · aprovada</span><span class="sample bad">B · reprovada</span><span class="sample good">C · aprovada</span><span class="sample bad">D · reprovada</span><span class="sample bad">E · reprovada</span></p>
+      <table class="data-table numeric"><thead><tr><th>Métrica</th><th>Cálculo por tarefa</th><th>Estimativa</th></tr></thead><tbody>
+        <tr><td>Pass@1</td><td>2 / 5</td><td class="accent">40%</td></tr>
+        <tr><td>Pass@3</td><td>1 − C(3, 3) / C(5, 3) = 1 − 1/10</td><td class="accent">90%</td></tr>
+        <tr><td>Pass@5</td><td>O grupo com todas as cinco contém uma correta.</td><td class="accent">100%</td></tr>
+      </tbody></table>
+      <p class="takeaway">Mais alternativas aumentam a chance de obter uma solução aprovada.</p>
+      <p class="source">Exemplo calculado com a Eq. 1. Os percentuais não representam funcionalidades implementadas.</p>
+    </section>
+
+    <section class="slide" data-chapter="Nossa proposta" aria-labelledby="pass-val-short-title">
+      <p class="eyebrow">Nossa proposta</p>
+      <h2 id="pass-val-short-title">O <span class="accent">pass_val</span> do pipeline</h2>
+      
+      <table class="data-table"><thead><tr><th>Status</th><th>P(t) = pass_val</th></tr></thead><tbody>
+        <tr><td><strong class="accent">Success</strong></td><td>1,0 para a classe aprovada.</td></tr>
+        <tr><td><strong class="orange">PartialSuccess</strong></td><td>Fração de métodos aprovados.</td></tr>
+        <tr><td><strong>Fail ou error</strong></td><td>0,0.</td></tr>
+      </tbody></table>
+      <p class="example-line"><strong>Exemplo:</strong> em PartialSuccess, 3 de 4 métodos aprovados produzem P(t) = <strong class="orange">0,75</strong>.</p>
+      <p class="takeaway">O Pass@1 original da classe exige aprovação completa. Nosso pass_val admite crédito parcial.</p>
+      <p class="source">Implementação local: scripts/take_solution.py, get_task_status(). A fração de métodos aprovados não assegura a integração da classe.</p>
+    </section>
+
+    <section class="slide" data-chapter="Nossa proposta" aria-labelledby="quality-formula-title">
+      <p class="eyebrow">Nossa proposta</p>
+      <h2 id="quality-formula-title">A fórmula implementada de <span class="accent">Quality@1</span></h2>
+      
+      <div class="formula">Quality@1(t) = P(t) × [1 − min(1, β × D(t) / L(t))]</div>
+      <dl class="definitions">
+        <div><dt>P(t)</dt><dd>pass_val: escore funcional da tarefa.</dd></div>
+        <div><dt>D(t)</dt><dd>sqale_index: dívida técnica estimada, em minutos.</dd></div>
+        <div><dt>L(t)</dt><dd>ncloc: linhas de código não comentadas.</dd></div>
+        <div><dt>β = 0,1</dt><dd>Peso da penalização configurado no código.</dd></div>
+      </dl>
+      <p class="takeaway">A qualidade ajusta o escore funcional. Com P(t) = 0, o resultado também é 0.</p>
+      <p class="source">scripts/compute_fqs.py. D/L tem unidade min/linha. β define a escala da penalização, não um limiar universal de qualidade.</p>
+    </section>
+
+    <section class="slide" data-chapter="Nossa proposta" aria-labelledby="quality-example-title">
+      <p class="eyebrow">Nossa proposta</p>
+      <h2 id="quality-example-title">Um exemplo do <span class="accent">ajuste por qualidade</span></h2>
+      
+      <p>Exemplo didático com β = 0,1 e L = 80 linhas para todas as soluções.</p>
+      <table class="data-table numeric"><thead><tr><th>Solução</th><th>P(t)</th><th>Dívida D</th><th>Fator de qualidade</th><th>Quality@1</th></tr></thead><tbody>
+        <tr><td>Classe aprovada A</td><td>1,00</td><td>40 min</td><td>1 − 0,05 = 0,95</td><td class="accent">0,95</td></tr>
+        <tr><td>Classe aprovada B</td><td>1,00</td><td>120 min</td><td>1 − 0,15 = 0,85</td><td class="accent">0,85</td></tr>
+        <tr><td>Sucesso parcial</td><td>0,75</td><td>120 min</td><td>0,85</td><td class="orange">0,6375</td></tr>
+        <tr><td>Falha funcional</td><td>0,00</td><td>40 min</td><td>0,95</td><td>0,00</td></tr>
+      </tbody></table>
+      <p class="takeaway">Complexidades e code smells apoiam a análise. A fórmula atual usa SQALE e NCLOC.</p>
+      <p class="source">Valores ilustrativos calculados com scripts/compute_fqs.py. Quality@1 é um escore composto, sem interpretação automática de probabilidade.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="pipeline-short-title">
+      <p class="eyebrow">Pipeline</p>
+      <h2 id="pipeline-short-title">Como a proposta produz o <span class="accent">escore</span></h2>
+      
+      <div class="flow">
+        <div class="flow-step"><b>Resultados funcionais</b><span>O ClassEval fornece os resultados dos testes de cada tarefa.</span></div>
+        <div class="flow-step"><b>Código analisável</b><span>A extração remove Markdown e prosa da resposta do modelo.</span></div>
+        <div class="flow-step"><b>SonarQube</b><span>A análise estática fornece as medidas do arquivo correspondente.</span></div>
+        <div class="flow-step"><b>Quality@1</b><span>A junção por modelo e tarefa combina pass_val com dívida por linha.</span></div>
+      </div>
+      <p class="example-line"><strong>Recorte atual:</strong> GPT-4-Turbo, GPT-3.5-Turbo e WizardCoder-15B-V1.0, com geração holística e greedy. GroundTruth é a referência humana.</p>
+      <p class="takeaway">Cada linha do dataset associa o resultado funcional e as métricas de qualidade da mesma solução.</p>
+      <p class="source">Implementação local: scripts/take_solution.py, scripts/merge_sonar_metrics.py e scripts/compute_fqs.py.</p>
+    </section>
+
+    <section class="slide" data-chapter="Interpretação" aria-labelledby="meaning-short-title">
+      <p class="eyebrow">Interpretação</p>
+      <h2 id="meaning-short-title">O que o <span class="accent">Quality@1</span> expressa</h2>
+      
+      <p class="lead">Um escore funcional ajustado pela dívida técnica estimada do código.</p>
+      <div class="grid two flat">
+        <article><h3>Contribuição</h3><p>Acrescentar uma dimensão de manutenibilidade à avaliação funcional. Com o mesmo pass_val e tamanho, menor dívida gera maior Quality@1.</p></article>
+        <article><h3>Limites da interpretação</h3><p>Crédito parcial não comprova uma classe correta. β define a penalização e precisa de validação. Uma nota de 0,95 não representa automaticamente 95% de probabilidade de acerto.</p></article>
+      </div>
+      <p class="takeaway">Pass@k avalia obtenção de soluções aprovadas. Quality@1 combina o escore funcional com uma medida estática.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al. (2023), ClassEval</a> · <a href="https://docs.sonarsource.com/sonarqube-server/user-guide/code-metrics/metrics-definition" target="_blank" rel="noopener">SonarSource, definições de métricas</a>. Proposta: scripts/compute_fqs.py.</p>
+    </section>
+
+    <nav class="controls" aria-label="Controles dos slides">
+      <button type="button" id="prev" aria-label="Slide anterior">←</button>
+      <select id="slide-picker" aria-label="Ir para um slide"></select>
+      <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+      <span class="counter" id="counter" aria-live="polite"></span>
+      <button type="button" id="next" aria-label="Próximo slide">→</button>
+      <span class="hint">Use ← → ou espaço · Imprimir para PDF</span>
+    </nav>
+  </main>
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("prev");
+      const next = document.getElementById("next");
+      const counter = document.getElementById("counter");
+      const progress = document.getElementById("progress");
+      const picker = document.getElementById("slide-picker");
+      const initial = Number(location.hash.replace("#slide-", ""));
+      let current = Number.isInteger(initial) && initial > 0 ? initial - 1 : 0;
+      let lastChapter = "";
+      let group;
+      slides.forEach((slide, i) => {
+        const chapter = slide.dataset.chapter || "Apresentação";
+        if (chapter !== lastChapter) {
+          group = document.createElement("optgroup");
+          group.label = chapter;
+          picker.append(group);
+          lastChapter = chapter;
+        }
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${String(i + 1).padStart(2, "0")} · ${slide.querySelector("h1, h2").textContent.trim()}`;
+        group.append(option);
+      });
+
+      function show(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === current);
+          slide.setAttribute("aria-hidden", String(i !== current));
+        });
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        counter.textContent = `${String(current + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        picker.value = String(current);
+        history.replaceState(null, "", `#slide-${current + 1}`);
+        window.scrollTo({top: 0, behavior: "instant"});
+        progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+        document.title = `${slides[current].querySelector("h1, h2").textContent.trim()} · Quality@1 resumido`;
+      }
+
+      picker.addEventListener("change", () => show(Number(picker.value)));
+      window.addEventListener("hashchange", () => {
+        const index = Number(location.hash.replace("#slide-", ""));
+        if (Number.isInteger(index) && index > 0) show(index - 1);
+      });
+      previous.addEventListener("click", () => show(current - 1));
+      next.addEventListener("click", () => show(current + 1));
+      document.addEventListener("keydown", (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target.closest("select, input, textarea, button, a, [contenteditable]")) return;
+        if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          show(current + 1);
+        } else if (["ArrowLeft", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          show(current - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          show(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          show(slides.length - 1);
+        }
+      });
+      show(current);
+    })();
+  </script>
+</body>
+</html>

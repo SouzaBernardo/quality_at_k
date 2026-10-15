@@ -3,7 +3,7 @@ import csv
 import sys
 import os
 
-BASE = "http://localhost:9000"
+BASE = os.environ.get("SONAR_URL", "http://localhost:9000")
 AUTH = ("admin", "sonarLike@21")
 
 METRICS = [

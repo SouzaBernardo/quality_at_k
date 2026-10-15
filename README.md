@@ -32,7 +32,9 @@ A estratégia **Holística (H)** gera a classe completa de uma só vez a partir 
 
 ## Executando o SonarQube
 
-A imagem já contém todos os projetos analisados, com métricas e usuários configurados. Basta executar:
+A imagem oficial é compatível com Linux AMD64 e ARM64. Na primeira execução,
+o SonarQube inicia sem projetos pré-carregados; os dados ficam preservados nos
+volumes Docker. Execute:
 
 ```bash
 docker compose up
@@ -43,11 +45,47 @@ O SonarQube estará disponível em [http://localhost:9000](http://localhost:9000
 | Campo | Valor |
 |-------|-------|
 | Usuário | `admin` |
-| Senha | `sonarLike@21` |
+| Senha inicial | `admin` |
 
-> Na primeira inicialização, o SonarQube pode levar alguns minutos para reconstruir o índice de busca interno a partir do banco de dados. Aguarde até a interface estar totalmente disponível.
+Na primeira entrada, o SonarQube solicitará a troca da senha. Aguarde alguns
+minutos para que a interface esteja totalmente disponível.
 
 ## Pipeline de Quality@1
+
+### Executando os scripts em um contêiner Python
+
+O serviço `python` instala as dependências do projeto, monta o repositório
+em `/app` e permanece em execução junto com o Compose. Para abrir um shell
+nesse contêiner:
+
+```bash
+docker compose up -d python
+docker compose exec python sh
+```
+
+Para executar um script pontual (o contêiner temporário encerra ao concluir):
+
+```bash
+docker compose run --rm python scripts/test_fqs.py
+```
+
+Para executar o pipeline completo, inicie primeiro o SonarQube e depois rode
+o pipeline no contêiner Python:
+
+```bash
+docker compose up -d sonarqube
+docker compose run --rm python scripts/pipeline.py
+```
+
+O contêiner Python também pode executar outros scripts do projeto, por exemplo:
+
+```bash
+docker compose run --rm python scripts/compute_fqs.py --pass_val 1.0 --sqale 120 --ncloc 80
+```
+
+As alterações nos arquivos e os resultados gerados ficam no diretório local,
+pois o repositório é montado no contêiner. O serviço SonarQube continua acessível
+em [http://localhost:9000](http://localhost:9000).
 
 ### Fórmula
 
@@ -132,10 +170,16 @@ Caso queira reenviar os projetos ao SonarQube do zero:
 # certifique-se de que o SonarQube esteja rodando
 docker compose up -d
 
+# crie os projetos e gere tokens locais (ajuste para a senha atual do admin)
+SONAR_AUTH='admin:<senha>' ./scripts/setup_sonar_projects.sh
+
 ./scripts/run_sonar.sh
 ```
 
-O script envia cada projeto para o SonarQube via `sonar-scanner`, usando os tokens de autenticação já configurados.
+O setup requer `curl` e `python3`, salva os tokens em
+`scripts/.sonar-tokens` (ignorado pelo Git) e pode ser executado novamente para
+gerar tokens novos. O script de análise constrói a imagem Python do Compose e
+executa o `pysonar` dentro do contêiner para enviar cada projeto ao SonarQube.
 
 ## Estrutura
 

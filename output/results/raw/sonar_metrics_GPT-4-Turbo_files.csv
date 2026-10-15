@@ -11,7 +11,7 @@ BankAccount.py,BankAccount.py,20,50,5,,,,,8,3,,,55.6,
 BigNumCalculator.py,BigNumCalculator.py,10,34,3,,,,,3,,,,67.7,
 BinaryDataProcessor.py,BinaryDataProcessor.py,17,40,5,,,,,6,,,,51.4,
 BitStatusUtil.py,BitStatusUtil.py,21,28,4,,,,,8,6,,,12.5,
-BlackjackGame.py,BlackjackGame.py,40,43,4,,,,,12,16,,,0.0,
+BlackjackGame.py,BlackjackGame.py,40,43,4,,1,,1,12,16,,,0.0,
 BookManagement.py,BookManagement.py,25,56,5,,,,,10,12,,,51.0,
 BookManagementDB.py,BookManagementDB.py,42,52,7,,,,,7,,,,6.7,
 BoyerMooreSearch.py,BoyerMooreSearch.py,24,31,4,,,5,5,10,10,,,11.1,10
@@ -53,14 +53,14 @@ JSONProcessor.py,JSONProcessor.py,31,47,3,,,,,7,7,,,27.9,
 KappaCalculator.py,KappaCalculator.py,16,43,2,,,4,4,2,,,,60.0,8
 Lemmatization.py,Lemmatization.py,25,29,5,,,,,6,5,,,0.0,
 LongestWord.py,LongestWord.py,17,40,3,,,,,7,5,,,48.5,
-MahjongConnect.py,MahjongConnect.py,36,43,6,,,6,6,18,16,,,2.7,24
+MahjongConnect.py,MahjongConnect.py,36,43,6,,1,6,7,18,16,,,2.7,24
 Manacher.py,Manacher.py,19,43,3,,,,,9,7,,,48.6,
 MetricsCalculator.py,MetricsCalculator.py,28,67,6,,,,,10,12,,,50.0,
 MetricsCalculator2.py,MetricsCalculator2.py,26,33,3,,,2,2,10,13,,,10.3,10
-MinesweeperGame.py,MinesweeperGame.py,37,42,5,,,2,2,17,23,,,0.0,10
+MinesweeperGame.py,MinesweeperGame.py,37,42,5,,1,2,3,17,23,,,0.0,10
 MovieBookingSystem.py,MovieBookingSystem.py,26,29,4,,,,,11,15,,,0.0,
 MovieTicketDB.py,MovieTicketDB.py,32,67,5,,,,,5,,,,47.5,
-MusicPlayer.py,MusicPlayer.py,54,103,9,,,,,18,19,,,41.9,
+MusicPlayer.py,MusicPlayer.py,54,103,9,,1,,1,18,19,,,41.9,
 NLPDataProcessor.py,NLPDataProcessor.py,8,29,3,,,,,4,,,,69.2,
 NLPDataProcessor2.py,NLPDataProcessor2.py,18,40,3,,,,,5,2,,,50.0,
 NumberConverter.py,NumberConverter.py,19,70,6,,,,,6,,,,70.3,
@@ -88,7 +88,7 @@ Thermostat.py,Thermostat.py,40,52,8,,,,,16,13,,,7.0,
 TicTacToe.py,TicTacToe.py,27,30,4,,,1,1,13,14,,,0.0,2
 TimeUtils.py,TimeUtils.py,22,29,8,,,,,8,,,,0.0,
 TriCalculator.py,TriCalculator.py,29,65,6,,,3,3,9,4,,,51.7,15
-TwentyFourPointGame.py,TwentyFourPointGame.py,15,45,5,,,1,1,5,1,,,57.1,5
+TwentyFourPointGame.py,TwentyFourPointGame.py,15,45,5,,1,1,2,5,1,,,57.1,5
 URLHandler.py,URLHandler.py,14,47,6,,,,,6,,,,65.0,
 UrlPath.py,UrlPath.py,14,39,4,,,,,4,,,,58.8,
 UserLoginDB.py,UserLoginDB.py,19,57,6,,,,,6,,,,62.7,

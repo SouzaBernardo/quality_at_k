@@ -4,7 +4,7 @@ import sys
 import os
 import math
 
-BASE = "http://localhost:9000"
+BASE = os.environ.get("SONAR_URL", "http://localhost:9000")
 AUTH = ("admin", "sonarLike@21")
 
 METRICS = [

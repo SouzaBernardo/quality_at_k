@@ -46,7 +46,8 @@ The [ClassEval](https://github.com/FudanSELab/ClassEval) benchmark evaluates LLM
 
 ## Running SonarQube
 
-The image already contains all analyzed projects, with metrics and users pre-configured. Just run:
+The official image supports Linux AMD64 and ARM64. On first run, SonarQube
+starts without preloaded projects; data is preserved in Docker volumes. Run:
 
 ```bash
 docker compose up
@@ -57,9 +58,10 @@ SonarQube will be available at [http://localhost:9000](http://localhost:9000).
 | Field    | Value          |
 | -------- | -------------- |
 | Username | `admin`        |
-| Password | `sonarLike@21` |
+| Initial password | `admin` |
 
-> On the first startup, SonarQube may take a few minutes to rebuild its internal search index from the database. Wait until the interface is fully available.
+On first login, SonarQube will prompt you to change the password. Allow a few
+minutes for the interface to become fully available.
 
 ## Quality@1 Pipeline
 
@@ -139,10 +141,15 @@ If you want to resubmit all projects to SonarQube from scratch:
 # make sure SonarQube is running
 docker compose up -d
 
+SONAR_AUTH='admin:<password>' ./scripts/setup_sonar_projects.sh
+
 ./scripts/run_sonar.sh
 ```
 
-The script submits each project to SonarQube via `sonar-scanner`, using the pre-configured authentication tokens.
+The setup script requires `curl` and `python3`, saves tokens locally in
+`scripts/.sonar-tokens` (ignored by Git), and can be rerun to generate new
+tokens. The analysis script builds the Compose Python image and runs `pysonar`
+inside the container to submit each project to SonarQube.
 
 ## Repository Structure
 

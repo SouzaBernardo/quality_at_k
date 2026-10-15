@@ -99,10 +99,20 @@ Análise estatística separada do pipeline principal. Lê um CSV consolidado e g
 Scripts de configuração e manutenção do SonarQube. Executar manualmente quando necessário.
 
 ### `run_sonar.sh`
-Reenvia todos os projetos ao SonarQube via `sonar-scanner`. Usar quando quiser re-analisar o código do zero (requer SonarQube rodando).
+Reenvia todos os projetos ao SonarQube usando o scanner `pysonar` dentro do
+contêiner `python` do Compose. O script constrói/atualiza a imagem Python antes
+das análises; requer Docker Compose, SonarQube em execução e tokens gerados pelo
+`setup_sonar_projects.sh`.
 
 ### `setup_sonar_projects.sh`
-Cria os projetos e tokens de autenticação no SonarQube. Executar uma única vez na configuração inicial. Atualiza `run_sonar.sh` com os tokens gerados.
+Cria os projetos que ainda não existem e gera tokens de análise do SonarQube.
+Requer `curl` e `python3` (não depende de `jq`). Salva os tokens em
+`scripts/.sonar-tokens`, um arquivo local ignorado pelo Git e acessível apenas
+pelo usuário atual. Configure a autenticação pela variável `SONAR_AUTH`
+(`admin:senha`) se ela for diferente do padrão.
+
+Execute novamente se os tokens precisarem ser recriados; os tokens anteriores
+devem ser revogados pela interface do SonarQube.
 
 ### `delete_sonar_projects.sh`
 Remove todos os projetos do SonarQube. Útil para reset completo.
