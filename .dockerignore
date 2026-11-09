@@ -1,1 +1,5 @@
 sonarqube-data/es8
+.git/
+.env
+scripts/.sonar-tokens
+output/

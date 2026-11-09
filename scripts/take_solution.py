@@ -17,7 +17,7 @@ STRATEGY_KEY = "H(greedy)"  # format used as key in detailed_result.json
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent
 FILE_SUFIX = f"_class_{STRATEGY}"
 
-def isNotToAnalisyze(file_name: str) -> bool:
+def should_skip_file(file_name: str) -> bool:
     not_have_sufix = FILE_SUFIX not in file_name
     not_in_models = file_name.replace(f"{FILE_SUFIX}.json", '') not in MODELS.values()
     return not_have_sufix or not_in_models
@@ -141,7 +141,7 @@ def main():
     originals_dir = PROJECT_ROOT / "output" / "solutions" / "originals"
 
     for file_name in os.listdir(input_dir):
-        if isNotToAnalisyze(file_name):
+        if should_skip_file(file_name):
             continue
 
         model_name = file_name.replace(f"{FILE_SUFIX}.json", "")

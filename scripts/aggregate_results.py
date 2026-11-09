@@ -21,4 +21,4 @@ agg = agg.sort_values(["model", "status"]).reset_index(drop=True)
 
 agg.to_csv(OUTPUT_CSV, index=False, float_format="%.6f")
 print(agg.to_string(index=False))
-print(f"\nSalvo em {OUTPUT_CSV}")
+print(f"\nSaved to {OUTPUT_CSV}")

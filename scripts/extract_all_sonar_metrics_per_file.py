@@ -4,7 +4,7 @@ import sys
 import os
 import math
 
-BASE = "http://localhost:9000"
+BASE = os.environ.get("SONAR_URL", "http://localhost:9000")
 AUTH = ("admin", "sonarLike@21")
 
 METRICS = [
@@ -78,6 +78,10 @@ print(f"Found {len(projects)} projects", file=sys.stderr)
 for p in projects:
     key = p["key"]
     rows = fetch_files(key)
+    if not rows:
+        print(f"  Skipping {key}: no analyzed files", file=sys.stderr)
+        continue
+
     path = save_csv(key, rows)
     print(f"  [{len(rows):>3} files] {key}", file=sys.stderr)
 
