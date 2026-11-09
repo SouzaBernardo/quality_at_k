@@ -5,22 +5,22 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Configuração de caminhos relativos ao local do script
+# Configure paths relative to this script.
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 csv_path = os.path.join(base_dir, "sonar_metrics_consolidated_master.csv")
-output_report_path = os.path.join(base_dir, "reports", "relatorio_estatistico.md")
-output_plot_dir = os.path.join(base_dir, "reports", "graficos")
+output_report_path = os.path.join(base_dir, "reports", "statistical_report.md")
+output_plot_dir = os.path.join(base_dir, "reports", "charts")
 
-# Certifica que os diretórios de saída existem
+# Ensure output directories exist.
 os.makedirs(os.path.dirname(output_report_path), exist_ok=True)
 os.makedirs(output_plot_dir, exist_ok=True)
 
-print(f"Lendo base de dados consolidada de: {csv_path}")
+print(f"Reading consolidated dataset from: {csv_path}")
 if not os.path.exists(csv_path):
-    raise FileNotFoundError(f"Erro: O arquivo master CSV não foi encontrado em: {csv_path}")
+    raise FileNotFoundError(f"Error: master CSV file not found at: {csv_path}")
 
 master_df = pd.read_csv(csv_path)
-print(f"Base de dados carregada com sucesso. Total de registros: {len(master_df)}")
+print(f"Dataset loaded successfully. Total records: {len(master_df)}")
 
 # Standardize names
 master_df['model'] = master_df['model'].replace({
@@ -30,8 +30,8 @@ master_df['model'] = master_df['model'].replace({
     'groundtruth': 'GroundTruth'
 })
 
-# 1. Gerar Tabela Descritiva Geral
-print("Gerando estatísticas descritivas por modelo...")
+# 1. Generate overall descriptive statistics.
+print("Generating descriptive statistics by model...")
 summary_rows = []
 grouped = master_df.groupby("model")
 
@@ -76,8 +76,8 @@ summary_df["sort_order"] = summary_df.apply(
 summary_df = summary_df.sort_values("sort_order").drop(columns=["sort_order"])
 summary_md = summary_df.to_markdown(index=False)
 
-# 2. RQ1: Comparação de Complexidade do grupo Functional vs Non-Functional (excluindo GroundTruth)
-print("Executando testes para RQ1...")
+# 2. RQ1: Compare functional and non-functional code complexity (excluding GroundTruth).
+print("Running RQ1 tests...")
 non_gt_df = master_df[master_df["model"] != "GroundTruth"].copy()
 non_gt_df['functional'] = non_gt_df['status'].isin(['Success', 'PartialSuccess'])
 
@@ -117,8 +117,8 @@ cc_gpt4 = master_df[master_df['model'] == 'GPT-4-Turbo']['cognitive_complexity']
 cc_wiz = master_df[master_df['model'] == 'WizardCoder-15B-V1.0']['cognitive_complexity']
 stat_cross, p_cross = stats.mannwhitneyu(cc_gpt4, cc_wiz, alternative="two-sided")
 
-# 3. RQ2: Comparação Pass@1 vs Quality@1 (FQS)
-print("Executando testes para RQ2...")
+# 3. RQ2: Compare Pass@1 and Quality@1 (FQS).
+print("Running RQ2 tests...")
 wilcoxon_rows = []
 for model in ['GPT-4-Turbo', 'GPT-3.5-Turbo', 'WizardCoder-15B-V1.0']:
     sub = non_gt_df[non_gt_df["model"] == model]
@@ -156,19 +156,19 @@ total_success_all = len(successes)
 silent_debt_all = sum(successes['fqs'] < 1.0)
 pct_silent_debt_all = (silent_debt_all / total_success_all) * 100
 
-# 3.5. Discussão: Diagnóstico do GroundTruth vs. GPT-4-Turbo
-print("Executando análise do GroundTruth vs. GPT-4-Turbo...")
+# 3.5. Discussion: Compare GroundTruth and GPT-4-Turbo.
+print("Analyzing GroundTruth vs. GPT-4-Turbo...")
 gt_success = master_df[(master_df['model'] == 'GroundTruth') & (master_df['status'] == 'Success')]
 gpt4_success = master_df[(master_df['model'] == 'GPT-4-Turbo') & (master_df['status'] == 'Success')]
 
 gt_vs_gpt4_rows = []
 gt_vs_gpt4_metrics = [
-    ('cognitive_complexity', 'Complexidade Cognitiva'),
-    ('complexity', 'Complexidade Ciclomática'),
+    ('cognitive_complexity', 'Cognitive Complexity'),
+    ('complexity', 'Cyclomatic Complexity'),
     ('code_smells', 'Code Smells'),
-    ('sqale_index', 'Dívida Técnica (min)'),
+    ('sqale_index', 'Technical Debt (min)'),
     ('fqs', 'FQS'),
-    ('ncloc', 'Tamanho de Código (NCLOC)')
+    ('ncloc', 'Code Size (NCLOC)')
 ]
 
 for col_name, metric_label in gt_vs_gpt4_metrics:
@@ -181,9 +181,9 @@ for col_name, metric_label in gt_vs_gpt4_metrics:
     u_stat, p_val = stats.mannwhitneyu(s_gt, s_gpt4, alternative='two-sided')
     
     gt_vs_gpt4_rows.append({
-        "Métrica": metric_label,
-        "GT Média": round(mean_gt, 4),
-        "GPT-4 Média": round(mean_gpt4, 4),
+        "Metric": metric_label,
+        "GT Mean": round(mean_gt, 4),
+        "GPT-4 Mean": round(mean_gpt4, 4),
         "U Statistic": u_stat,
         "p-value": p_val,
         "Significativo (5%)": "Yes" if p_val < 0.05 else "No"
@@ -197,7 +197,7 @@ gt_total = len(gt_success)
 gt_silent_debt_count = sum(gt_success['fqs'] < 1.0)
 pct_gt_silent_debt = (gt_silent_debt_count / gt_total) * 100 if gt_total > 0 else 0.0
 
-# Tasks where LLM has FQS=1.0 and GT has FQS < 1.0
+# Tasks where an LLM has FQS=1.0 and GroundTruth has FQS < 1.0.
 df_pivot_fqs = master_df.pivot(index='file', columns='model', values='fqs')
 better_tasks = df_pivot_fqs[
     (df_pivot_fqs['GroundTruth'] < 1.0) & 
@@ -207,7 +207,7 @@ better_tasks = df_pivot_fqs[
 better_tasks_rows = []
 for idx, row in better_tasks.iterrows():
     better_tasks_rows.append({
-        "Tarefa": row['file'],
+        "Task": row['file'],
         "FQS GT": round(row['GroundTruth'], 4),
         "GPT-4": row['GPT-4-Turbo'] if not pd.isna(row['GPT-4-Turbo']) else "---",
         "GPT-3.5": row['GPT-3.5-Turbo'] if not pd.isna(row['GPT-3.5-Turbo']) else "---",
@@ -217,8 +217,8 @@ better_tasks_df = pd.DataFrame(better_tasks_rows)
 better_tasks_md = better_tasks_df.to_markdown(index=False)
 
 
-# 4. Geração de Gráficos
-print("Gerando gráficos...")
+# 4. Generate charts.
+print("Generating charts...")
 sns.set_theme(style="whitegrid", context="talk")
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -292,7 +292,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(output_plot_dir, "scatter_pareto_frontier.png"), dpi=300)
 plt.close()
 
-# Plot 3: Heatmap de Correlação de Spearman
+# Plot 3: Spearman correlation heatmap.
 plt.figure(figsize=(10, 8))
 corr_vars = ["ncloc", "complexity", "cognitive_complexity", "code_smells", "sqale_index", "fqs"]
 corr_matrix = master_df[corr_vars].corr(method="spearman")
@@ -329,66 +329,66 @@ plt.tight_layout()
 plt.savefig(os.path.join(output_plot_dir, "heatmap_correlation.png"), dpi=300)
 plt.close()
 
-# 6. Gravar Relatório Markdown
-print("Gravando relatório markdown...")
-report_content = f"""# Relatório Consolidado de Análise Estatística (Recorte 400 registros)
+# 6. Write the Markdown report.
+print("Writing Markdown report...")
+report_content = f"""# Consolidated Statistical Analysis Report (400-Record Dataset)
 
-Este relatório resume os resultados das análises de corretude funcional e qualidade de software (SonarQube) sobre as execuções do benchmark **ClassEval** (Temperatura 0, Geração Holística) focando no recorte de GPT-4-Turbo, GPT-3.5-Turbo, WizardCoder-15B-V1.0 e GroundTruth.
+This report summarizes the functional correctness and software quality (SonarQube) analyses of the **ClassEval** benchmark runs (temperature 0, Holistic generation), covering GPT-4-Turbo, GPT-3.5-Turbo, WizardCoder-15B-V1.0, and GroundTruth.
 
 ---
 
-## 1. Tabela Geral de Desempenho (Médias por LLM e GroundTruth)
+## 1. Overall Performance (Means by LLM and GroundTruth)
 
-Esta tabela apresenta o sucesso nos testes unitários e as médias das métricas estáticas do SonarQube para cada grupo.
+This table shows unit-test outcomes and mean SonarQube static-analysis metrics for each group.
 
 {summary_md}
 
-*Nota: `Quality@1 (FQS)` foi calculado utilizando a fórmula proposta com fator de escala $\\beta = 0.1$.*
+*Note: `Quality@1 (FQS)` was calculated using the proposed formula with a scaling factor of $\\beta = 0.1$.*
 
 ---
 
-## 2. RQ1: Relação entre Corretude Funcional e Qualidade Estrutural
+## 2. RQ1: Relationship Between Functional Correctness and Structural Quality
 
-Investizamos se os códigos funcionais diferem de forma estatisticamente significativa em termos estruturais dos códigos que falharam.
+We investigated whether functional code differs significantly in structural metrics from code that failed.
 
-### Teste de Hipótese (Mann-Whitney U por Modelo - Bicaudal):
+### Hypothesis Test (Two-Sided Mann–Whitney U by Model)
 {rq1_md}
 
-###   omparação de Complexidade Cognitiva (GPT-4 vs WizardCoder):
-* Estatística U: {stat_cross:.1f}
-* **p-valor: {p_cross:.2e}**
-* *Resultado:* {'Rejeitamos a Hipótese Nula ($H_{10}$)' if p_cross < 0.05 else 'Não rejeitamos a Hipótese Nula'} (nível de significância de 5%).
+### Cognitive Complexity Comparison (GPT-4 vs. WizardCoder)
+* U statistic: {stat_cross:.1f}
+* **p-value: {p_cross:.2e}**
+* *Result:* {'We reject the null hypothesis ($H_{10}$)' if p_cross < 0.05 else 'We do not reject the null hypothesis'} at the 5% significance level.
 
 ---
 
-## 3. RQ2: Avaliação e Validação da Métrica `Quality@1` (FQS)
+## 3. RQ2: Evaluation and Validation of the `Quality@1` (FQS) Metric
 
-Avaliamos a significância estatística do pedágio de qualidade do FQS em comparação ao Pass@1 clássico.
+We evaluated the statistical significance of the quality penalty in FQS compared with classical Pass@1.
 
-### Teste de Wilcoxon (Pass@1 vs. Quality@1):
+### Wilcoxon Test (Pass@1 vs. Quality@1)
 {wilcoxon_md}
 
-### Fatos Estatísticos de Validação:
-1. **Dívida Técnica Silenciosa (LLMs):** Em **{pct_silent_debt:.2f}%** dos casos de sucesso funcional das LLMs (73 arquivos), o score final de qualidade foi reduzido devido à dívida técnica.
-2. **Dívida Técnica Silenciosa (Total):** Considerando todos os **{total_success_all}** sucessos da base (incluindo GroundTruth), **{silent_debt_all}** arquivos (**{pct_silent_debt_all:.2f}%**) contêm dívida técnica silenciosa.
-3. **Validação Convergente (Spearman nos Sucessos das LLMs):**
-   * A correlação de Spearman entre `Quality@1` e *Code Smells* é de **{r_smells:.4f}** (p-valor: {p_smells:.2e}), provando forte validade de construto com manutenibilidade.
-   * A correlação com *Complexidade Cognitiva* é de **{r_cc:.4f}** (p-valor: {p_cc:.2e}), sem correlação significativa nos sucessos.
+### Statistical Validation Findings
+1. **Silent Technical Debt (LLMs):** In **{pct_silent_debt:.2f}%** of functionally successful LLM cases (73 files), technical debt reduced the final quality score.
+2. **Silent Technical Debt (Overall):** Of the **{total_success_all}** successful cases in the dataset (including GroundTruth), **{silent_debt_all}** files (**{pct_silent_debt_all:.2f}%**) contain silent technical debt.
+3. **Convergent Validation (Spearman Correlation for LLM Successes):**
+   * The Spearman correlation between `Quality@1` and *Code Smells* is **{r_smells:.4f}** (p-value: {p_smells:.2e}), indicating strong construct validity with respect to maintainability.
+   * The correlation with *Cognitive Complexity* is **{r_cc:.4f}** (p-value: {p_cc:.2e}), indicating no significant correlation among successful cases.
 
 ---
 
-## 4. Discussão: Diagnóstico da Referência Humana (GroundTruth vs. GPT-4-Turbo)
+## 4. Discussion: Human Reference Analysis (GroundTruth vs. GPT-4-Turbo)
 
-Apresentamos as análises estatísticas comparativas entre os sucessos funcionais do GroundTruth e do GPT-4-Turbo, além da identificação de superioridade de qualidade das LLMs.
+This section presents statistical comparisons between functionally successful GroundTruth and GPT-4-Turbo solutions, and identifies cases where LLMs achieved higher quality scores.
 
-### Fatos Estatísticos do GroundTruth:
-* **Classes com Dívida Técnica:** **{gt_silent_debt_count}** das {gt_total} classes de referência humana (**{pct_gt_silent_debt:.2f}%**) possuem dívida técnica silenciosa (FQS < 1.0).
+### GroundTruth Findings
+* **Classes with Technical Debt:** **{gt_silent_debt_count}** of the {gt_total} human-reference classes (**{pct_gt_silent_debt:.2f}%**) have silent technical debt (FQS < 1.0).
 
-### Tarefas onde LLMs superaram o GroundTruth em Qualidade Estrutural (FQS_LLM = 1.0 > FQS_GT):
+### Tasks Where LLMs Outperformed GroundTruth in Structural Quality (FQS_LLM = 1.0 > FQS_GT)
 {better_tasks_md}
 
-### Contraste Estatístico (MWU nos Sucessos: GT vs GPT-4-Turbo):
-Compare exclusivamente implementações funcionais bem-sucedidas ($N_{{GT}} = 100$, $N_{{GPT4}} = 37$).
+### Statistical Comparison (Mann–Whitney U for Successful Solutions: GT vs. GPT-4-Turbo)
+This comparison includes only functionally successful implementations ($N_{{GT}} = 100$, $N_{{GPT4}} = 37$).
 
 {gt_vs_gpt4_md}
 
@@ -397,6 +397,5 @@ Compare exclusivamente implementações funcionais bem-sucedidas ($N_{{GT}} = 10
 with open(output_report_path, "w", encoding="utf-8") as f:
     f.write(report_content)
 
-print(f"\nSucesso! O relatório estatístico foi salvo em: {output_report_path}")
-print(f"Os gráficos gerados foram salvos no diretório: {output_plot_dir}\n")
-
+print(f"\nSuccess! The statistical report was saved to: {output_report_path}")
+print(f"Generated charts were saved to: {output_plot_dir}\n")

@@ -6,7 +6,7 @@ SONAR_AUTH="admin:sonarLike@21"
 delete_project() {
     local key="$1"
 
-    echo "==> Deletando: $key"
+    echo "==> Deleting: $key"
 
     local response
     response=$(curl -s -o /dev/null -w "%{http_code}" -u "$SONAR_AUTH" -X POST \
@@ -16,7 +16,7 @@ delete_project() {
     if [ "$response" = "204" ]; then
         echo "    OK"
     else
-        echo "    ERRO (HTTP $response)"
+        echo "    ERROR (HTTP $response)"
     fi
 }
 
@@ -26,4 +26,4 @@ delete_project "WizardCoder-15B-V1.0"
 delete_project "GroundTruth"
 
 echo ""
-echo "==> Concluído!"
+echo "==> Done!"

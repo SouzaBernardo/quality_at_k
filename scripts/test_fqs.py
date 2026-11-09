@@ -1,7 +1,7 @@
 """
 Validates compute_fqs against the test cases from the paper table (β = 0.1).
 
-Tarefa | Pass@1 | NCLOC | SQALE | Expected
+Task   | Pass@1 | NCLOC | SQALE | Expected
 -------|--------|-------|-------|----------
 t1     |   0    |   0   |   0   |  0.000
 t2     |   1    |  30   |   0   |  1.000

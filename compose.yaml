@@ -1,7 +1,28 @@
 services:
   sonarqube:
-    image: beposs/class_eval_sonar:latest
+    image: ${SONARQUBE_IMAGE:-beposs/class_eval_sonar:windows}
+    platform: ${SONARQUBE_PLATFORM:-linux/amd64}
     ports:
       - "9000:9000"
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_historical_data:/opt/sonarqube/data
+      - sonarqube_historical_extensions:/opt/sonarqube/extensions
+      - sonarqube_historical_logs:/opt/sonarqube/logs
+
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    command: ["-c", "import threading; threading.Event().wait()"]
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      SONAR_URL: http://sonarqube:9000
+
+volumes:
+  sonarqube_historical_data:
+  sonarqube_historical_extensions:
+  sonarqube_historical_logs:

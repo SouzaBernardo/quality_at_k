@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101923">
+  <title>ClassEval, Pass@k, and Quality@1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101923;
+      --panel: #17232f;
+      --panel-soft: #1d2c39;
+      --text: #f3f6f8;
+      --muted: #a6b5c1;
+      --accent: #79e0bd;
+      --blue: #8cbcff;
+      --orange: #ffc178;
+      --line: #344553;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); }
+    body {
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button { font: inherit; }
+    .deck { min-height: 100svh; display: grid; grid-template-rows: 1fr auto; }
+    .slide {
+      width: min(100%, 1440px);
+      min-height: 0;
+      margin: auto;
+      padding: clamp(2rem, 6vw, 6rem) clamp(1.5rem, 8vw, 8rem);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      animation: enter .32s ease-out;
+    }
+    .slide.active { display: flex; }
+    @keyframes enter {
+      from { opacity: .25; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 950px; margin-bottom: 1.25rem; font-size: clamp(3rem, 8vw, 7rem); line-height: .99; letter-spacing: -.065em; }
+    h2 { max-width: 1000px; margin: .7rem 0 2rem; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.04; letter-spacing: -.05em; }
+    h3 { margin-bottom: .65rem; font-size: clamp(1.1rem, 2vw, 1.45rem); }
+    p, li { color: var(--muted); font-size: clamp(1rem, 1.55vw, 1.3rem); line-height: 1.55; }
+    strong { color: var(--text); }
+    .lead { max-width: 780px; font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
+    .accent { color: var(--accent); }
+    .blue { color: var(--blue); }
+    .orange { color: var(--orange); }
+    .title-meta { margin-top: 2rem; color: var(--muted); font-size: 1rem; }
+    .title-mark {
+      width: 4.2rem; height: .35rem; margin: 0 0 2rem;
+      border-radius: 2rem; background: var(--accent);
+    }
+    .grid { display: grid; gap: 1rem; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      min-width: 0; padding: clamp(1.1rem, 2.3vw, 1.8rem);
+      border: 1px solid var(--line); border-radius: 1rem;
+      background: linear-gradient(145deg, var(--panel), #14202a);
+    }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .step {
+      display: inline-grid; width: 2.1rem; height: 2.1rem; margin-bottom: 1rem;
+      place-items: center; border-radius: 50%; color: var(--bg);
+      background: var(--accent); font-size: .95rem; font-weight: 800;
+    }
+    .path, code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    code {
+      color: #dbf8ee; overflow-wrap: anywhere;
+      font-size: .88em;
+    }
+    .tree, .command {
+      margin: .9rem 0 0; padding: 1rem 1.1rem;
+      overflow-x: auto; border: 1px solid var(--line); border-radius: .8rem;
+      background: #0b131a; color: #c8d5de; font-size: clamp(.78rem, 1.25vw, 1rem); line-height: 1.65;
+    }
+    .flow {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: stretch; gap: 1.7rem; margin-top: 1.1rem;
+    }
+    .flow-step { position: relative; padding: 1.15rem; border-radius: .9rem; background: var(--panel); border: 1px solid var(--line); }
+    .flow-step:not(:last-child)::after {
+      content: "→"; position: absolute; right: -1.4rem; top: 42%;
+      color: var(--accent); font-size: 1.3rem; font-weight: 800;
+    }
+    .flow-step b { display: block; margin-bottom: .55rem; color: var(--text); }
+    .flow-step span { color: var(--muted); font-size: .95rem; line-height: 1.45; }
+    .formula {
+      margin: 1rem 0; padding: 1.2rem; border-left: 4px solid var(--accent);
+      border-radius: 0 .8rem .8rem 0; background: var(--panel);
+      color: var(--text); font: 600 clamp(1rem, 2.1vw, 1.55rem)/1.6 "SFMono-Regular", Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+    .callout { padding: 1rem 1.2rem; border: 1px solid #755c3a; border-radius: .8rem; background: #2b251c; color: #ffe3bd; }
+    .callout p { margin: 0; color: inherit; font-size: 1rem; }
+    ul { padding-left: 1.2rem; }
+    li + li { margin-top: .45rem; }
+    .outputs { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem 1.5rem; }
+    .output { padding: .85rem 0; border-bottom: 1px solid var(--line); }
+    .output p { margin: .25rem 0 0; font-size: .95rem; }
+    .controls {
+      position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center;
+      gap: .8rem; padding: .85rem clamp(1rem, 4vw, 3rem);
+      border-top: 1px solid var(--line); background: rgb(16 25 35 / 94%);
+      backdrop-filter: blur(12px);
+    }
+    .controls button {
+      min-width: 2.7rem; min-height: 2.7rem; border: 1px solid var(--line);
+      border-radius: .65rem; color: var(--text); background: var(--panel);
+      cursor: pointer;
+    }
+    .controls button:hover:not(:disabled) { border-color: var(--accent); }
+    .controls button:disabled { opacity: .4; cursor: not-allowed; }
+    .progress { height: .3rem; flex: 1; overflow: hidden; border-radius: 2rem; background: var(--line); }
+    .progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+    .counter { min-width: 4.2rem; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+    .hint { margin-left: auto; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 760px) {
+      .slide { padding: 2rem 1.25rem 3rem; }
+      .grid.two, .grid.three, .flow, .outputs { grid-template-columns: 1fr; }
+      .flow { gap: .7rem; }
+      .flow-step:not(:last-child)::after { content: "↓"; right: 1rem; top: auto; bottom: -.85rem; z-index: 1; }
+      .hint { display: none; }
+      .controls { gap: .45rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { color-scheme: light; --bg: #fff; --panel: #f1f5f7; --panel-soft: #eef2f5; --text: #15222b; --muted: #394b58; --accent: #087b5b; --blue: #195dab; --orange: #89500d; --line: #c5d0d6; }
+      html, body, .deck { background: #fff; }
+      .slide, .slide.active { display: flex !important; min-height: 100vh; page-break-after: always; break-after: page; animation: none; }
+      .controls { display: none; }
+      .tree, .command { background: #f4f7f8; color: #182832; }
+      .formula { color: #15222b; }
+      .card, .flow-step { background: #f5f8f9; }
+      .callout { background: #fff8ed; color: #563800; }
+    }
+
+    /* Foundation layouts with no external dependencies. */
+    .slide { padding: clamp(1.8rem, 4vh, 3.4rem) clamp(1.5rem, 6vw, 6rem); }
+    h1 { font-size: clamp(3rem, 7vw, 6.4rem); }
+    h2 { max-width: 1150px; font-size: clamp(2rem, 4.1vw, 3.65rem); margin-bottom: 1.65rem; }
+    .card { background: var(--panel); }
+    .flat { gap: 2.3rem; margin-top: 1rem; }
+    .flat article { min-width: 0; border-top: 2px solid var(--line); padding-top: 1.2rem; }
+    .flat article p:last-child { margin-bottom: 0; }
+    .takeaway { color: var(--text); margin: 1.6rem 0 0; padding-left: 1.1rem; border-left: 3px solid var(--accent); font-weight: 550; }
+    .source { font-size: .85rem; line-height: 1.45; margin: 1.7rem 0 0; color: var(--muted); }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: .18em; }
+    a:hover { color: var(--accent); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 0 0 1.1rem; }
+    .stats dt { font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 750; letter-spacing: -.05em; color: var(--blue); }
+    .stats dd { margin: .3rem 0 0; font-size: 1.1rem; color: var(--muted); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: clamp(1rem, 1.5vw, 1.28rem); line-height: 1.45; }
+    .data-table th { color: var(--muted); font-size: .86em; font-weight: 600; text-align: left; padding: .8rem 1rem; border-bottom: 2px solid var(--line); }
+    .data-table td { padding: 1rem; border-bottom: 1px solid var(--line); }
+    .data-table th:first-child, .data-table td:first-child { padding-left: 0; }
+    .data-table td:first-child { width: 30%; }
+    .data-table.numeric td:first-child { width: auto; }
+    .data-table.numeric { font-variant-numeric: tabular-nums; }
+    .math-display { padding: 1.5rem 0; font-size: clamp(1.7rem, 3vw, 2.7rem); color: var(--accent); }
+    math { font-family: 'Cambria Math', 'STIX Two Math', math; }
+    .sample-line { display: flex; flex-wrap: wrap; gap: .75rem; margin: .8rem 0 1.2rem; }
+    .sample { padding: .45rem .7rem; border-bottom: 2px solid var(--line); font-size: 1rem; }
+    .sample.good { color: var(--accent); border-color: var(--accent); }
+    .sample.bad { color: var(--orange); border-color: var(--orange); }
+    .big-number { color: var(--accent); font-size: 4.4rem; line-height: 1.1; margin: .8rem 0; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .big-number.orange { color: var(--orange); }
+    .definitions { margin: 1rem 0 0; }
+    .definitions > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1rem; padding: .6rem 0; border-bottom: 1px solid var(--line); }
+    .definitions dt { font-weight: 650; color: var(--accent); font-size: 1.2rem; }
+    .definitions dd { margin: 0; color: var(--muted); font-size: 1.2rem; line-height: 1.4; }
+    .references p { font-size: 1.05rem; margin-bottom: 1.3rem; }
+    .example-line { margin-top: 1.4rem; }
+    .paper-title { max-width: 1050px; font-size: clamp(1.2rem, 1.8vw, 1.55rem); }
+    .controls select { width: min(26vw, 20rem); min-width: 9rem; padding: .65rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--panel); color: var(--text); font: inherit; font-size: .85rem; }
+    .controls button:focus-visible, .controls select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .controls { position: fixed; left: 0; right: 0; min-height: 4.4rem; }
+    .deck { padding-bottom: 4.4rem; grid-template-columns: minmax(0, 1fr); }
+    .slide { min-width: 0; }
+    .hint { white-space: nowrap; }
+    @media (max-width: 1000px) { .hint { display: none; } }
+    @media screen and (min-width: 761px) and (max-height: 800px) {
+      .slide { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+      h2 { margin-bottom: 1.1rem; }
+      .source, .takeaway { margin-top: 1rem; }
+      .lead { margin-bottom: 1rem; }
+      .card { padding: 1.2rem; }
+      .big-number { font-size: 3.5rem; }
+      .flat { margin-top: .6rem; }
+    }
+    @media (max-width: 760px) {
+      .slide { padding: 2rem 1.25rem; }
+      .stats { gap: .8rem; }
+      .stats dd { font-size: .85rem; }
+      .stats dt { font-size: 2.6rem; }
+      .flat { gap: 1.3rem; }
+      .data-table { font-size: .88rem; }
+      .data-table th, .data-table td { padding: .65rem .35rem; overflow-wrap: anywhere; }
+      .sample { font-size: .82rem; }
+      .math-display { font-size: 1.35rem; }
+      .definitions > div { grid-template-columns: 4.7rem 1fr; gap: .6rem; }
+      .definitions dt, .definitions dd { font-size: 1rem; }
+      .controls { padding: .65rem .75rem; }
+      .controls select { min-width: 0; width: 32vw; font-size: .75rem; }
+      .controls .progress { display: none; }
+      .counter { margin-left: auto; }
+    }
+    @media print {
+      @page { size: A4 landscape; margin: 0; }
+      .deck { display: block; padding-bottom: 0; }
+      .slide, .slide.active { width: 297mm; height: 210mm; min-height: 0; margin: 0; padding: 12mm 15mm; break-inside: avoid; }
+      .slide:last-of-type { break-after: auto; page-break-after: auto; }
+      h1 { font-size: 54pt; }
+      h2 { font-size: 32pt; margin-bottom: 6mm; }
+      h3 { font-size: 16pt; }
+      p, li { font-size: 13pt; line-height: 1.4; }
+      .lead { font-size: 18pt; }
+      .source { font-size: 8pt; margin-top: 5mm; }
+      .data-table { font-size: 13pt; }
+      .data-table th, .data-table td { padding-top: 3mm; padding-bottom: 3mm; }
+      .stats dt { font-size: 42pt; }
+      .formula { font-size: 15pt; }
+      .references p { font-size: 12pt; }
+      .takeaway { margin-top: 5mm; }
+      .flat { margin-top: 3mm; gap: 8mm; }
+      .card { padding: 5mm; }
+      .definitions dt, .definitions dd { font-size: 13pt; }
+      .sample { color: var(--text); }
+      .math-display { color: #087b5b; font-size: 27pt; }
+      .controls { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Presentation on ClassEval, Pass@k, Quality@1, and SonarQube">
+    <section class="slide active" data-chapter="Introduction" aria-labelledby="s1-title">
+      <div class="title-mark"></div>
+      <p class="eyebrow">Functional correctness and code quality</p>
+      <h1 id="s1-title">ClassEval, Pass@k, and <span class="accent">Quality@1</span></h1>
+      <p class="lead">The original evaluation, the meaning of pass_val, and our SonarQube-based proposal.</p>
+      <p class="title-meta">Paper background / Implemented proposal / Analysis pipeline</p>
+    </section>
+
+    <section class="slide" data-chapter="Original paper" aria-labelledby="research-title">
+      <p class="eyebrow">Original paper</p>
+      <h2 id="research-title">Generating <span class="blue">complete classes</span></h2>
+
+      <p class="lead paper-title">ClassEval: A Manually-Crafted Benchmark for Evaluating LLMs on Class-level Code Generation</p>
+      <div class="grid two flat">
+        <article><h3>Research question</h3><p>Benchmarks of isolated functions leave open how models generate methods that share state and depend on one another.</p></article>
+        <article><h3>Paper contribution</h3><p>A manually curated Python class benchmark and a study of <strong>11 models</strong> comparing three generation strategies.</p></article>
+      </div>
+      <p class="takeaway">The evaluated unit includes both the methods and how they work together as a class.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, introduction and Section 3.</p>
+    </section>
+
+    <section class="slide" data-chapter="Original paper" aria-labelledby="benchmark-title">
+      <p class="eyebrow">Original paper</p>
+      <h2 id="benchmark-title">The composition of <span class="blue">ClassEval</span></h2>
+
+      <dl class="stats">
+        <div><dt>100</dt><dd>Python class tasks</dd></div>
+        <div><dt>412</dt><dd>methods in the PDF version</dd></div>
+        <div><dt>~500 h</dt><dd>of human effort</dd></div>
+      </dl>
+      <div class="grid three flat">
+        <article><h3>Specification</h3><p>Class skeleton, signatures, expected behavior, and method contracts.</p></article>
+        <article><h3>Tests</h3><p>Individual method checks and sequences of class operations.</p></article>
+        <article><h3>Human reference</h3><p>Canonical implementation for each task, written and reviewed by the researchers.</p></article>
+      </div>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Sections 3.1–3.3. A later public version reports 410 methods.</p>
+    </section>
+
+    <section class="slide" data-chapter="Original paper" aria-labelledby="strategies-title">
+      <p class="eyebrow">Original paper</p>
+      <h2 id="strategies-title">Generation <span class="blue">strategies</span></h2>
+      <div class="grid three flat">
+        <article><h3>Holistic</h3><p>The model receives the skeleton and implements the entire class in one generation.</p></article>
+        <article><h3>Incremental</h3><p>The model generates one method at a time, using previously generated method bodies as context.</p></article>
+        <article><h3>Compositional</h3><p>The model generates each method independently, using the signatures of the others. The methods are then assembled into a class.</p></article>
+      </div>
+      <p class="takeaway">In the study, GPT-4 and GPT-3.5 performed best with the Holistic strategy. Other models benefited from method-level generation.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Sections 4.2 and 5.2. Our implementation uses the Holistic strategy.</p>
+    </section>
+
+    <section class="slide" data-chapter="Original paper" aria-labelledby="tests-title">
+      <p class="eyebrow">Original paper</p>
+      <h2 id="tests-title">The <span class="accent">correctness</span> criterion</h2>
+
+      <div class="grid two">
+        <article class="card"><h3>At the method level</h3><p>A method must pass <strong>all of its tests</strong>. Tests check return values and changes to object attributes.</p></article>
+        <article class="card"><h3>At the class level</h3><p>The class must pass <strong>all method and class tests</strong>, including interactions between operations.</p></article>
+      </div>
+      <p class="example-line"><strong>Vending machine:</strong> insert a coin, buy a product, and check the balance and inventory.</p>
+      <p class="takeaway">Under the original criterion, a solution that passes 99 out of 100 tests still fails.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Sections 3.2.3 and 4.4, Fig. 4.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="ingredients-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="ingredients-title">The components of <span class="accent">Pass@k</span></h2>
+
+      <table class="data-table"><thead><tr><th>Component</th><th>Meaning</th></tr></thead><tbody>
+        <tr><td><strong>Task</strong></td><td>Programming problem defined by the benchmark.</td></tr>
+        <tr><td><strong>n</strong></td><td>Total solutions generated for the task.</td></tr>
+        <tr><td><strong>c</strong></td><td>Number of solutions that pass all required tests.</td></tr>
+        <tr><td><strong>k</strong></td><td>Number of candidates considered in the evaluation, with 1 ≤ k ≤ n.</td></tr>
+      </tbody></table>
+      <p class="takeaway">Tests determine c. Complexity and technical debt are not part of this calculation.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Section 4.4, Eq. 1. The paper reuses Pass@k from Chen et al. (2021).</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="estimator-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="estimator-title">The <span class="accent">estimator</span> formula</h2>
+
+      <div class="math-display" aria-label="Pass at k is the per-task average of one minus the number of ways to choose k from n minus c divided by the number of ways to choose k from n">
+        <math display="block"><mrow><mi>Pass@k</mi><mo>=</mo><msub><mi>mean</mi><mtext>tasks</mtext></msub><mo>[</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mo>(</mo><mfrac linethickness="0"><mrow><mi>n</mi><mo>−</mo><mi>c</mi></mrow><mi>k</mi></mfrac><mo>)</mo></mrow><mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>k</mi></mfrac><mo>)</mo></mrow></mfrac><mo>]</mo></mrow></math>
+      </div>
+      <div class="grid two flat">
+        <article><h3>Inside the brackets</h3><p>Chance that a group of k candidates includes <strong>at least one correct solution</strong>. The fraction counts groups made up only of incorrect solutions.</p></article>
+        <article><h3>Across tasks</h3><p>The mean combines each task's estimate. For k = 1, the value for each task reduces to <strong>c / n</strong>.</p></article>
+      </div>
+      <p>In the paper: n = 5 and k ∈ {1, 3, 5}. Greedy evaluation uses one solution per task.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Sections 4.4–4.5. The combinations are sampled without replacement from the n candidates.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="pass-example-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="pass-example-title">Five solutions, <span class="accent">two correct</span></h2>
+
+      <p class="lead">Illustrative example for a task with n = 5 and c = 2.</p>
+      <p class="sample-line"><span class="sample good">A · passed</span><span class="sample bad">B · failed</span><span class="sample good">C · passed</span><span class="sample bad">D · failed</span><span class="sample bad">E · failed</span></p>
+      <table class="data-table numeric"><thead><tr><th>Metric</th><th>Per-task calculation</th><th>Estimate</th></tr></thead><tbody>
+        <tr><td>Pass@1</td><td>2 / 5</td><td class="accent">40%</td></tr>
+        <tr><td>Pass@3</td><td>1 − C(3, 3) / C(5, 3) = 1 − 1/10</td><td class="accent">90%</td></tr>
+        <tr><td>Pass@5</td><td>The group containing all five includes a correct solution.</td><td class="accent">100%</td></tr>
+      </tbody></table>
+      <p class="takeaway">More candidates increase the chance of obtaining an accepted solution.</p>
+      <p class="source">Example calculated with Eq. 1. These percentages do not represent implemented features.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pass@k" aria-labelledby="interpretation-title">
+      <p class="eyebrow">Pass@k</p>
+      <h2 id="interpretation-title">Completeness, correctness, and <span class="blue">coverage</span></h2>
+
+      <table class="data-table"><thead><tr><th>Concept</th><th>What it measures</th></tr></thead><tbody>
+        <tr><td><strong>Functional completeness</strong></td><td>Whether the required features are present.</td></tr>
+        <tr><td><strong>Functional correctness</strong></td><td>Whether behavior matches the expected results.</td></tr>
+        <tr><td><strong>Pass@k</strong></td><td>Chance of obtaining a solution that passes all tests among k candidates.</td></tr>
+        <tr><td><strong>Test coverage</strong></td><td>How much of the code is exercised by the tests.</td></tr>
+      </tbody></table>
+      <p class="takeaway">Evidence of correctness depends on the behaviors checked by the test suite.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Sections 3.3 and 4.4. High coverage alone does not prove the absence of defects.</p>
+    </section>
+
+    <section class="slide" data-chapter="Original paper" aria-labelledby="findings-title">
+      <p class="eyebrow">Original paper</p>
+      <h2 id="findings-title">Correct methods and <span class="blue">correct classes</span></h2>
+
+      <table class="data-table numeric"><thead><tr><th>Model in the paper</th><th>Pass@1 · methods</th><th>Pass@1 · classes</th></tr></thead><tbody>
+        <tr><td>GPT-4</td><td>62,8%</td><td>37,6%</td></tr>
+        <tr><td>GPT-3.5</td><td>50,4%</td><td>29,6%</td></tr>
+        <tr><td>WizardCoder</td><td>35,2%</td><td>12,2%</td></tr>
+      </tbody></table>
+      <p>Results use nucleus sampling with the strategy that achieved the highest class-level Pass@1 for each model.</p>
+      <p class="takeaway">A class working as a whole requires more than getting individual methods right.</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Table 7, 2023 experiment. These values are not results from our pipeline.</p>
+    </section>
+
+    <section class="slide" data-chapter="Transition to our proposal" aria-labelledby="gap-title">
+      <p class="eyebrow">Transition to our proposal</p>
+      <h2 id="gap-title">Quality of code <span class="orange">that passes the tests</span></h2>
+
+      <div class="grid two flat">
+        <article><h3>Functional evidence</h3><p>Pass@k checks whether solutions pass the test suite. The paper also introduces DEP to compare method and attribute dependencies with the reference.</p></article>
+        <article><h3>Additional dimension</h3><p>Passing code may still have technical debt and control flow that is hard to understand. Our proposal adds static analysis to functional evaluation.</p></article>
+      </div>
+      <p class="lead accent">How much of the functional score remains after accounting for the code's technical debt?</p>
+      <p class="source"><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a>, Section 4.4. DEP is a metric separate from Pass@k. Static quality: <a href="https://docs.sonarsource.com/sonarqube-server/user-guide/code-metrics/metrics-definition" target="_blank" rel="noopener">SonarSource, metric definitions</a>.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="scope-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="scope-title">The scope of the <span class="accent">current experiment</span></h2>
+
+      <div class="grid two flat">
+        <article><h3>Models analyzed</h3><ul><li>GPT-4-Turbo</li><li>GPT-3.5-Turbo</li><li>WizardCoder-15B-V1.0</li></ul></article>
+        <article><h3>Generation settings</h3><p><strong>Holistic (H)</strong> strategy and <strong>greedy</strong> decoding. The pipeline extracts the first prediction for each task.</p><p>GroundTruth serves as the human-reference group.</p></article>
+      </div>
+      <p class="takeaway">Each dataset row combines a model, task, functional result, and metrics from the same file.</p>
+      <p class="source">Local implementation: scripts/take_solution.py and scripts/merge_sonar_metrics.py. The pipeline assigns pass_val = 1 to GroundTruth.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="pass-val-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="pass-val-title">How code outcomes define <span class="accent">pass_val</span></h2>
+
+      <table class="data-table"><thead><tr><th>Pipeline status</th><th>Functional value P(t) = pass_val</th></tr></thead><tbody>
+        <tr><td><strong class="accent">Success</strong></td><td>1.0 when the class result is class_success.</td></tr>
+        <tr><td><strong class="orange">PartialSuccess</strong></td><td>Passing methods / evaluated methods when the result is class_partial_success.</td></tr>
+        <tr><td><strong>Fail or error</strong></td><td>0.0.</td></tr>
+        <tr><td><strong>No matching result</strong></td><td>Missing value, with status N/A after the join.</td></tr>
+      </tbody></table>
+      <p class="takeaway">P(t) is a functional score with partial credit. The original class-level Pass@1 is binary.</p>
+      <p class="source">scripts/take_solution.py, get_task_status(): counts method entries with success > 0. scripts/merge_sonar_metrics.py renames pass_value to pass_val.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="partial-example-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="partial-example-title">The meaning of <span class="orange">partial credit</span></h2>
+
+      <p class="lead">Illustrative example: a class marked PartialSuccess has 3 of 4 methods passing.</p>
+      <div class="grid two">
+        <article class="card"><h3>Original class criterion</h3><p>The solution fails because it does not pass all tests.</p><p class="big-number">0</p><p>Correctness indicator for this solution.</p></article>
+        <article class="card"><h3>Our pipeline score</h3><p>The fraction of passing methods preserves information about partial correctness.</p><p class="big-number orange">0.75</p><p>P(t) = 3 / 4.</p></article>
+      </div>
+      <p class="takeaway">A partial score does not guarantee that the class works as an integrated whole.</p>
+      <p class="source">Example of the get_task_status() calculation. Partial success is a pipeline adaptation, not equivalent to the original class-level Pass@1.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="quality-formula-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="quality-formula-title">The implemented <span class="accent">Quality@1</span> formula</h2>
+
+      <div class="formula">Quality@1(t) = P(t) × [1 − min(1, β × D(t) / L(t))]</div>
+      <dl class="definitions">
+        <div><dt>P(t)</dt><dd>pass_val: the task's functional score.</dd></div>
+        <div><dt>D(t)</dt><dd>sqale_index: estimated technical debt, in minutes.</dd></div>
+        <div><dt>L(t)</dt><dd>ncloc: non-commented lines of code.</dd></div>
+        <div><dt>β = 0.1</dt><dd>Penalty weight configured in the code.</dd></div>
+      </dl>
+      <p class="takeaway">Quality adjusts the functional score. When P(t) = 0, the result is also 0.</p>
+      <p class="source">scripts/compute_fqs.py. D/L is measured in minutes per line. β sets the penalty scale; it is not a universal quality threshold.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="quality-example-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="quality-example-title">An example of the <span class="accent">quality adjustment</span></h2>
+
+      <p>Illustrative example with β = 0.1 and L = 80 lines for every solution.</p>
+      <table class="data-table numeric"><thead><tr><th>Solution</th><th>P(t)</th><th>Debt D</th><th>Quality factor</th><th>Quality@1</th></tr></thead><tbody>
+        <tr><td>Passing class A</td><td>1.00</td><td>40 min</td><td>1 − 0.05 = 0.95</td><td class="accent">0.95</td></tr>
+        <tr><td>Passing class B</td><td>1.00</td><td>120 min</td><td>1 − 0.15 = 0.85</td><td class="accent">0.85</td></tr>
+        <tr><td>Partial success</td><td>0.75</td><td>120 min</td><td>0.85</td><td class="orange">0.6375</td></tr>
+        <tr><td>Functional failure</td><td>0.00</td><td>40 min</td><td>0.95</td><td>0.00</td></tr>
+      </tbody></table>
+      <p class="takeaway">For the same P(t) and code size, greater technical debt reduces Quality@1.</p>
+      <p class="source">Illustrative values calculated with scripts/compute_fqs.py. Quality@1 is a composite score, not a probability estimate.</p>
+    </section>
+
+    <section class="slide" data-chapter="Our proposal" aria-labelledby="sonar-metrics-title">
+      <p class="eyebrow">Our proposal</p>
+      <h2 id="sonar-metrics-title">The role of <span class="blue">SonarQube</span> metrics</h2>
+
+      <table class="data-table"><thead><tr><th>Metric</th><th>Role in the current pipeline</th></tr></thead><tbody>
+        <tr><td><strong>SQALE Index</strong></td><td>Contributes to the penalty through estimated remediation effort for maintainability issues.</td></tr>
+        <tr><td><strong>NCLOC</strong></td><td>Normalizes technical debt by code size.</td></tr>
+        <tr><td><strong>Cognitive and cyclomatic complexity</strong></td><td>Auxiliary dataset metrics for examining control flow and execution paths.</td></tr>
+        <tr><td><strong>Code smells</strong></td><td>Auxiliary count of detected maintainability issues.</td></tr>
+      </tbody></table>
+      <p class="takeaway">The current formula uses SQALE and NCLOC. Other measures support code analysis.</p>
+      <p class="source"><a href="https://docs.sonarsource.com/sonarqube-server/user-guide/code-metrics/metrics-definition" target="_blank" rel="noopener">SonarSource, metric definitions</a>. Consolidated fields: scripts/merge_sonar_metrics.py. The scanner also collects other measures in the raw CSVs.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s2-title">
+      <p class="eyebrow">Pipeline · Inputs</p>
+      <h2 id="s2-title"><span class="blue">ClassEval</span> input files</h2>
+      <div class="grid two">
+        <article class="card">
+          <h3>Model responses</h3>
+          <p>JSONs containing the Python classes generated for benchmark tasks.</p>
+          <pre class="tree">output/ClassEval_output/
+└── model_output_v1.0.0/
+    ├── GPT-4-Turbo_class_H_greedy.json
+    ├── GPT-3.5-Turbo_class_H_greedy.json
+    └── WizardCoder-15B-V1.0_class_H_greedy.json</pre>
+        </article>
+        <article class="card">
+          <h3>Functional results</h3>
+          <p>Detailed results associate each task with success, partial success, failure, or error.</p>
+          <pre class="tree">output/ClassEval_output/
+└── result/
+    └── detailed_result.json</pre>
+          <p><strong>Configured scope:</strong> three models, Holistic (H) strategy, greedy decoding, plus GroundTruth.</p>
+        </article>
+      </div>
+      <p style="margin-top:1.2rem">Input files must exist before running the scripts. The pipeline does <strong>not download</strong> the benchmark.</p>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s3-title">
+      <p class="eyebrow">Pipeline · Extraction</p>
+      <h2 id="s3-title">Extracting <span class="accent">analyzable code</span></h2>
+      <div class="flow">
+        <div class="flow-step"><b>Model JSON</b><span>Finds the task, class, and first prediction.</span></div>
+        <div class="flow-step"><b>Cleanup</b><span>Removes Markdown fences and prose around the implementation.</span></div>
+        <div class="flow-step"><b>Python files</b><span>Saves the original response and sanitized version in separate directories.</span></div>
+        <div class="flow-step"><b>pass_val / status</b><span>Converts functional results to a CSV by model and class.</span></div>
+      </div>
+      <pre class="command">python3 scripts/take_solution.py</pre>
+      <div class="grid two" style="margin-top:1rem">
+        <div class="card"><h3>Analysis input</h3><code>output/solutions/{model}/*.py</code></div>
+        <div class="card"><h3>Functional results CSV</h3><code>output/results/pass_results.csv</code></div>
+      </div>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s4-title">
+      <p class="eyebrow">Pipeline · Static analysis</p>
+      <h2 id="s4-title">Static analysis with <span class="blue">SonarQube</span></h2>
+      <div class="grid three">
+        <article class="card"><span class="step">1</span><h3>Start the service</h3><p>Compose starts the local instance, available on port 9000.</p></article>
+        <article class="card"><span class="step">2</span><h3>Configure projects</h3><p>Projects and tokens must be available in SonarQube.</p></article>
+        <article class="card"><span class="step">3</span><h3>Run the analysis</h3><p><code>run_sonar.sh</code> iterates over solution directories and submits each analysis with <code>pysonar</code>.</p></article>
+      </div>
+      <pre class="command">docker compose up -d
+./scripts/run_sonar.sh</pre>
+      <div class="callout" style="margin-top:1rem"><p><strong>Prerequisite:</strong> SonarQube must be ready, with projects and tokens configured. The setup script is <code>scripts/setup_sonar_projects.sh</code>.</p></div>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s5-title">
+      <p class="eyebrow">Pipeline · Collection</p>
+      <h2 id="s5-title">Collecting <span class="accent">raw metrics</span></h2>
+      <div class="grid two">
+        <article class="card">
+          <h3>Project-level metrics</h3>
+          <p>The script retrieves projects and aggregate measures such as NCLOC, complexity, bugs, vulnerabilities, and SQALE.</p>
+          <code>raw/sonar_metrics.csv</code>
+        </article>
+        <article class="card">
+          <h3>Per-file metrics</h3>
+          <p>A paginated query collects measures for each file and allows the code to be linked to its task.</p>
+          <code>raw/sonar_metrics_{projeto}_files.csv</code>
+        </article>
+      </div>
+      <div class="flow" style="margin-top:1.2rem">
+        <div class="flow-step"><b>SonarQube API</b><span>Lists projects</span></div>
+        <div class="flow-step"><b>Measures</b><span>Retrieves aggregate measures</span></div>
+        <div class="flow-step"><b>Component tree</b><span>Retrieves files and measures</span></div>
+        <div class="flow-step"><b>Raw CSVs</b><span>Saved under <code>output/results/raw/</code></span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s6-title">
+      <p class="eyebrow">Pipeline · Dataset</p>
+      <h2 id="s6-title">Joining by <span class="accent">model and task</span></h2>
+      <div class="flow">
+        <div class="flow-step"><b>ClassEval results</b><span><code>pass_results.csv</code></span></div>
+        <div class="flow-step"><b>SonarQube metrics</b><span>Per-file CSV</span></div>
+        <div class="flow-step"><b>Task-level join</b><span>Model and base class</span></div>
+        <div class="flow-step"><b>Quality@1</b><span>Score calculated per task</span></div>
+      </div>
+      <div class="formula">Quality@1(t) = P(t) × [1 − min(1, β × SQALE(t) / NCLOC(t))]</div>
+      <div class="grid three">
+        <div class="card"><h3 class="accent">P(t) = pass_val</h3><p>Functional score, including partial credit.</p></div>
+        <div class="card"><h3 class="blue">SQALE</h3><p>Estimated remediation effort, in minutes.</p></div>
+        <div class="card"><h3 class="orange">NCLOC</h3><p>Non-commented lines of code; used to normalize debt.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s7-title">
+      <p class="eyebrow">Pipeline · Execution</p>
+      <h2 id="s7-title">Full workflow commands</h2>
+      <pre class="command"># 1. Extract responses in the Python container
+docker compose run --rm python scripts/take_solution.py
+
+# 2. Start SonarQube and submit the solutions
+docker compose up -d sonarqube
+./scripts/run_sonar.sh
+
+# 3. Collect measures, calculate the score, and validate
+docker compose run --rm python scripts/pipeline.py</pre>
+      <div class="callout" style="margin-top:1rem"><p><strong>Note:</strong> <code>pipeline.py</code> does not submit code for analysis. It extracts solutions, retrieves metrics for projects already in SonarQube, combines the CSVs, and runs checks.</p></div>
+    </section>
+
+    <section class="slide" data-chapter="Pipeline" aria-labelledby="s8-title">
+      <p class="eyebrow">Pipeline · Outputs</p>
+      <h2 id="s8-title">The dataset and <span class="accent">pipeline outputs</span></h2>
+      <div class="outputs">
+        <div class="output"><code>output/solutions/{model}/*.py</code><p>Sanitized code submitted for analysis.</p></div>
+        <div class="output"><code>output/results/pass_results.csv</code><p>Status and functional pass_val score per task.</p></div>
+        <div class="output"><code>output/results/raw/</code><p>Metrics retrieved from the SonarQube API.</p></div>
+        <div class="output"><code>output/results/combined_sonar_metrics.csv</code><p><strong>Main dataset:</strong> metrics and Quality@1 per task.</p></div>
+        <div class="output"><code>output/results/aggregated_results.csv</code><p>Results grouped by model, strategy, and status.</p></div>
+        <div class="output"><code>output/validation/</code><p>HTML reports comparing original and sanitized responses.</p></div>
+      </div>
+      <p style="margin-top:1.5rem">Result: a reproducible view that combines <strong>functional correctness</strong> and <strong>structural quality</strong> of generated code.</p>
+    </section>
+
+    <section class="slide" data-chapter="Discussion" aria-labelledby="methodology-title">
+      <p class="eyebrow">Discussion</p>
+      <h2 id="methodology-title">Choices for <span class="orange">validating the proposal</span></h2>
+
+      <div class="grid two flat">
+        <article><h3>Functional comparability</h3><p>Report binary pass rates and partial credit separately. Confirm that the analyzed code matches the tested solution after sanitization.</p><h3>Choosing β</h3><p>Evaluate sensitivity to the weight. D/L may favor longer code, so examine the effect of normalization.</p></article>
+        <article><h3>Missing data</h3><p>Distinguish a missing measure from zero debt. The current code replaces missing SQALE with 0 and assigns a score of 0 when NCLOC is 0 during the join.</p><h3>Aggregation</h3><p>Show counts and means by status. A mean computed only over successful cases does not represent all tasks.</p></article>
+      </div>
+      <p class="source">Methodological considerations based on the current implementation. scripts/merge_sonar_metrics.py and scripts/aggregate_results.py.</p>
+    </section>
+
+    <section class="slide" data-chapter="Discussion" aria-labelledby="quality-k-title">
+      <p class="eyebrow">Discussion</p>
+      <h2 id="quality-k-title">A future extension: <span class="blue">Quality@k</span></h2>
+
+      <p class="lead">The current pipeline calculates Quality@1 per task. An evaluation with k candidates requires a new criterion.</p>
+      <div class="grid two flat">
+        <article><h3>Acceptance criterion</h3><p>Count in c only solutions that pass all tests and meet a quality threshold. The estimator would then measure the chance of obtaining at least one accepted solution.</p></article>
+        <article><h3>Continuous score</h3><p>Evaluate candidate quality and define how to aggregate it. This choice produces a different score that needs its own definition and validation.</p></article>
+      </div>
+      <p class="takeaway">The definition of Quality@k depends on what makes a candidate successful.</p>
+      <p class="source">Conceptual options for discussion. These extensions are not part of the implemented formula or pipeline.</p>
+    </section>
+
+    <section class="slide" data-chapter="References" aria-labelledby="references-title">
+      <p class="eyebrow">References</p>
+      <h2 id="references-title">Sources for this <span class="blue">presentation</span></h2>
+
+      <div class="references">
+        <p><strong>Original paper</strong><br><a href="https://arxiv.org/abs/2308.01861v2" target="_blank" rel="noopener">Du et al., ClassEval, version 2 (2023)</a><br>Introduction and benchmark, Sections 3 and 4.4, Table 7. The provided PDF corresponds to version 2.</p>
+        <p><strong>Origin of Pass@k</strong><br><a href="https://arxiv.org/abs/2107.03374" target="_blank" rel="noopener">Chen et al. (2021), Evaluating Large Language Models Trained on Code</a><br>Work cited by ClassEval for the estimator.</p>
+        <p><strong>Quality metrics</strong><br><a href="https://docs.sonarsource.com/sonarqube-server/user-guide/code-metrics/metrics-definition" target="_blank" rel="noopener">SonarSource, metric definitions</a></p>
+        <p><strong>Local proposal and implementation</strong><br><code>take_solution.py</code>, <code>compute_fqs.py</code>, <code>merge_sonar_metrics.py</code>, and <code>aggregate_results.py</code> in the <code>scripts/</code> directory.</p>
+      </div>
+
+    </section>
+
+    <nav class="controls" aria-label="Slide controls">
+      <button type="button" id="prev" aria-label="Previous slide">←</button>
+      <select id="slide-picker" aria-label="Go to slide"></select>
+      <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+      <span class="counter" id="counter" aria-live="polite"></span>
+      <button type="button" id="next" aria-label="Next slide">→</button>
+      <span class="hint">Use ← → or Space · Print to PDF</span>
+    </nav>
+  </main>
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("prev");
+      const next = document.getElementById("next");
+      const counter = document.getElementById("counter");
+      const progress = document.getElementById("progress");
+      const picker = document.getElementById("slide-picker");
+      const initial = Number(location.hash.replace("#slide-", ""));
+      let current = Number.isInteger(initial) && initial > 0 ? initial - 1 : 0;
+      let lastChapter = "";
+      let group;
+      slides.forEach((slide, i) => {
+        const chapter = slide.dataset.chapter || "Presentation";
+        if (chapter !== lastChapter) {
+          group = document.createElement("optgroup");
+          group.label = chapter;
+          picker.append(group);
+          lastChapter = chapter;
+        }
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${String(i + 1).padStart(2, "0")} · ${slide.querySelector("h1, h2").textContent.trim()}`;
+        group.append(option);
+      });
+
+      function show(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("active", i === current);
+          slide.setAttribute("aria-hidden", String(i !== current));
+        });
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        counter.textContent = `${String(current + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        picker.value = String(current);
+        history.replaceState(null, "", `#slide-${current + 1}`);
+        window.scrollTo({top: 0, behavior: "instant"});
+        progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+        document.title = `${slides[current].querySelector("h1, h2").textContent.trim()} · ClassEval and Quality@1`;
+      }
+
+      picker.addEventListener("change", () => show(Number(picker.value)));
+      window.addEventListener("hashchange", () => {
+        const index = Number(location.hash.replace("#slide-", ""));
+        if (Number.isInteger(index) && index > 0) show(index - 1);
+      });
+      previous.addEventListener("click", () => show(current - 1));
+      next.addEventListener("click", () => show(current + 1));
+      document.addEventListener("keydown", (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target.closest("select, input, textarea, button, a, [contenteditable]")) return;
+        if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          show(current + 1);
+        } else if (["ArrowLeft", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          show(current - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          show(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          show(slides.length - 1);
+        }
+      });
+      show(current);
+    })();
+  </script>
+</body>
+</html>

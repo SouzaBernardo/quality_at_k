@@ -1,48 +1,91 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-SONAR_HOST="http://localhost:9000"
-SONAR_AUTH="admin:sonarLike@21"
+set -euo pipefail
+umask 077
+
+SONAR_HOST="${SONAR_HOST:-http://localhost:9000}"
+SONAR_AUTH="${SONAR_AUTH:-admin:sonarLike@21}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SONAR_SH="$SCRIPT_DIR/run_sonar.sh"
+TOKEN_FILE="$SCRIPT_DIR/.sonar-tokens"
+TEMP_TOKEN_FILE="$(mktemp "$SCRIPT_DIR/.sonar-tokens.XXXXXX")"
+trap 'rm -f "$TEMP_TOKEN_FILE"' EXIT
 
-criar_projeto_e_token() {
+project_exists() {
     local key="$1"
 
-    echo ""
-    echo "==> Projeto: $key"
+    curl --fail --silent --show-error --user "$SONAR_AUTH" --get \
+        --data-urlencode "projects=$key" \
+        --data-urlencode "ps=1" \
+        "$SONAR_HOST/api/projects/search" |
+        python3 -c '
+import json
+import sys
 
-    # Criar projeto (silencioso — falha se já existir é ignorada)
-    curl -s -u "$SONAR_AUTH" -X POST \
-      "$SONAR_HOST/api/projects/create" \
-      -d "name=${key}&project=${key}" > /dev/null
+try:
+    projects = json.load(sys.stdin).get("components", [])
+except (json.JSONDecodeError, AttributeError):
+    sys.exit("ERROR: invalid response while querying SonarQube projects.")
 
-    # Gerar token de análise com nome único por timestamp
-    local token_name="token-${key}-$(date +%s)"
+sys.exit(0 if projects else 1)
+'
+}
+
+create_project_and_token() {
+    local key="$1"
+    local token_variable="$2"
+    local token_name="token-${key}-$(date +%s)-$$-${RANDOM}"
     local response
-    response=$(curl -s -u "$SONAR_AUTH" -X POST \
-      "$SONAR_HOST/api/user_tokens/generate" \
-      -d "name=${token_name}&type=PROJECT_ANALYSIS_TOKEN&projectKey=${key}")
-
     local token
-    token=$(echo "$response" | jq -r '.token // empty')
 
-    if [ -z "$token" ]; then
-        echo "    ERRO ao gerar token: $response"
+    echo ""
+    echo "==> Project: $key"
+
+    if project_exists "$key"; then
+        echo "    Project already exists."
+    else
+        curl --fail --silent --show-error --user "$SONAR_AUTH" \
+            --request POST \
+            --data-urlencode "name=$key" \
+            --data-urlencode "project=$key" \
+            "$SONAR_HOST/api/projects/create" >/dev/null
+        echo "    Project created."
+    fi
+
+    response=$(curl --fail --silent --show-error --user "$SONAR_AUTH" \
+        --request POST \
+        --data-urlencode "name=$token_name" \
+        --data-urlencode "type=PROJECT_ANALYSIS_TOKEN" \
+        --data-urlencode "projectKey=$key" \
+        "$SONAR_HOST/api/user_tokens/generate")
+
+    if ! token=$(printf '%s' "$response" | python3 -c '
+import json
+import re
+import sys
+
+try:
+    token = json.load(sys.stdin).get("token", "")
+except (json.JSONDecodeError, AttributeError):
+    sys.exit(1)
+
+if not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", token):
+    sys.exit(1)
+
+print(token)
+'); then
+        echo "    ERROR: SonarQube did not return a valid token for $key." >&2
         return 1
     fi
 
-    echo "    Token: $token"
-
-    # Substituir "" pelo token gerado na linha do projeto em run_sonar.sh
-    sed -i '' -E "s|run_analysis \"${key}\"(.*)\"\"|run_analysis \"${key}\"\1\"${token}\"|" "$SONAR_SH"
-
-    echo "    run_sonar.sh atualizado."
+    printf '%s=%s\n' "$token_variable" "$token" >> "$TEMP_TOKEN_FILE"
+    echo "    Token generated."
 }
 
-criar_projeto_e_token "GPT-3.5-Turbo"
-criar_projeto_e_token "GPT-4-Turbo"
-criar_projeto_e_token "WizardCoder-15B-V1.0"
-criar_projeto_e_token "GroundTruth"
+create_project_and_token "GPT-3.5-Turbo" "SONAR_TOKEN_GPT_35_TURBO"
+create_project_and_token "GPT-4-Turbo" "SONAR_TOKEN_GPT_4_TURBO"
+create_project_and_token "WizardCoder-15B-V1.0" "SONAR_TOKEN_WIZARDCODER"
+create_project_and_token "GroundTruth" "SONAR_TOKEN_GROUNDTRUTH"
 
+mv -f "$TEMP_TOKEN_FILE" "$TOKEN_FILE"
 echo ""
-echo "==> Concluído! Todos os projetos criados e run_sonar.sh atualizado."
+echo "==> Done! Tokens saved to scripts/.sonar-tokens."

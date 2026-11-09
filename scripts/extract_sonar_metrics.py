@@ -3,7 +3,7 @@ import csv
 import sys
 import os
 
-BASE = "http://localhost:9000"
+BASE = os.environ.get("SONAR_URL", "http://localhost:9000")
 AUTH = ("admin", "sonarLike@21")
 
 METRICS = [
@@ -35,6 +35,10 @@ for p in projects:
     )
     r.raise_for_status()
     measures = r.json().get("component", {}).get("measures", [])
+    if not measures:
+        print(f"  Skipping {key}: no analyzed metrics", file=sys.stderr)
+        continue
+
     row = {"project": key}
     for m in measures:
         row[m["metric"]] = m.get("value", "")
